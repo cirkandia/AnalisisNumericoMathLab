@@ -1,80 +1,89 @@
-from sympy import symbols, log
-import math
 from tabulate import tabulate
 import numpy as np
-import sympy as sp
-import re
+import math
 
-def conversion(expr):
-    expr = re.sub(r'(?<!\w)e', 'E', expr)
-    expr = re.sub(r'\bln\b', 'log', expr)
-    sympy_expr = sp.sympify(expr)
-    converted_expr = str(sympy_expr).replace('E', 'math.exp(1)')
-    converted_expr = converted_expr.replace('exp(', 'math.exp(')
-    converted_expr = converted_expr.replace('log(', 'math.log(')
-    return converted_expr
+def newton_method(f, df, x0, tolerance, max_iterations, error_type="abs"):
+    """
+Encuentra la raíz de una función f utilizando el método de Newton.
 
-def C5_newton(f,df, x0, tol,Nmax,error12):
-    f =conversion(f) 
-    df =conversion(df) 
-    
-    def evaluate_expression(x):
-        return eval(f)
-    
-    def evaluate_expression2(x):
-        return eval(df)
-    
-    xant=x0 
-    fant=evaluate_expression(xant)
-    cont=0 
-    matriz = []
-    dfx=evaluate_expression2(xant)
-   
-    if dfx == 0:
-        print("Error: division por cero")
-        return matriz
+    Argumentos:
+        f (función): La función de la que buscar la raíz.
+        df (función): La derivada de la función f.
+        x0 (flotante): La estimación inicial.
+        tolerance (float): La tolerancia para la raíz.
+        max_iteraciones (int): El número máximo de iteraciones.
+        tipo_error (str): El tipo de error a utilizar («abs» para absoluto, «rel» para relativo).
 
-    xact=xant-fant/dfx 
-    Eabs=abs(xact-xant)
- 
-    if error12=="rela":
-        if xact != 0:
-            E=Eabs/xact
-            err=Eabs/xact
-            print("esa fue")
-        else:
-            print("Error: division by zero")
-            E= float('inf')
-            err=float('inf')
-    else:
-        E=Eabs
+    Devuelve:
+        tupla: Una tupla que contiene el valor final de x, el valor de f(x), el número de iteraciones y la matriz de iteraciones.
+    """
+    x_current = x0
+    iteration_count = 0
+    iteration_data = []
 
-    while E>tol and cont<Nmax:
-        if dfx == 0:
-            print("Error: division por cero")
-            break
-            
-        xact=xant-fant/dfx 
-        fact=evaluate_expression(xact)
-        Eabs=abs(xact-xant) 
-        err=Eabs/xact    
-        if error12=="rela":
-            if xact != 0:
-                E=Eabs/xact
-                err=Eabs/xact
-                print("esa fue")
+    while iteration_count < max_iterations:
+        try:
+            f_current = f(x_current)
+            df_current = df(x_current)
+        except ZeroDivisionError:
+            print("Error: División por cero durante la evaluación de funciones.")
+            return x_current, f(x_current), iteration_count, iteration_data
+
+        if df_current == 0:
+            print("Error: La derivada es 0. El método de Newton puede fallar.")
+            return x_current, f(x_current), iteration_count, iteration_data
+
+        x_next = x_current - f_current / df_current
+
+        if error_type == "abs":
+            error = abs(x_next - x_current)
+        elif error_type == "rel":
+            if x_next != 0:
+                error = abs((x_next - x_current) / x_next)
             else:
-                print("Error: division by zero")
-                E= float('inf')
-                err=float('inf')
-            
+                print("Error: División por cero en el cálculo del error relativo.")
+                return x_current, f(x_current), iteration_count, iteration_data
         else:
-            E=Eabs
-        matriz.append([cont, xant,fant,dfx,  Eabs, err ])
-        cont=cont+1 
-        xant=xact 
-        fant=fact 
-        dfx=evaluate_expression2(xant)
+            print("Error: Tipo de error inválido. Escoge 'abs' o 'rel'.")
+            return x_current, f(x_current), iteration_count, iteration_data
 
-    return  matriz
+        iteration_data.append([iteration_count, x_current, f_current, df_current, error])
 
+        if error < tolerance:
+            return x_next, f(x_next), iteration_count, iteration_data
+
+        x_current = x_next
+        iteration_count += 1
+
+    print("Advertencia: Se ha alcanzado el número máximo de iteraciones.")
+    return x_current, f(x_current), iteration_count, iteration_data
+
+
+if __name__ == '__main__':
+    function_str = input("Ingresa la función f(x) (e.g., x**3 - 7.51*x**2 + 18.4239*x - 14.8331): ")
+    derivative_str = input("Ingresa la derivada df(x) (e.g., 3*x**2 - 15.02*x + 18.4239): ")
+    x0 = float(input("Ingresa la estimación inicial x0: "))
+    tolerance = float(input("Ingresa la tolerancia: "))
+    max_iterations = int(input("Ingresa el número máximo de iteraciones: "))
+    error_type = input("Ingresa el tipo de error ('abs' para absoluto, 'rel' para relativo): ")
+
+    def f(x):
+        return eval(function_str)
+
+    def df(x):
+        return eval(derivative_str)
+
+    if tolerance <= 0:
+        print("Error: La tolerancia debe ser un número positivo.")
+        exit()
+    if max_iterations <= 0:
+        print("Error: El número máximo de iteraciones debe ser un número positivo.")
+        exit()
+
+    x, fx, iteration_count, iteration_data = newton_method(f, df, x0, tolerance, max_iterations, error_type)
+
+    if iteration_count > 0:
+        print(tabulate(iteration_data, headers=["Iteration", "x_current", "f(x_current)", "df(x_current)", "Error"], tablefmt="fancy_grid"))
+        print(f"\nRaiz encontrada en: x = {x}, f(x) = {fx} después de {iteration_count} iteraciones.")
+    else:
+        print("\nNo se ha encontrado ninguna raíz dentro de la tolerancia y las iteraciones máximas dadas.")
