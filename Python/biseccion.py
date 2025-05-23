@@ -54,7 +54,6 @@ def biseccion(f, lower_bound, upper_bound, tolerance, max_iterations):
     return lower_bound, upper_bound, iteration_count, matriz
 
 
-# Get inputs from the user
 try:
     function_str = input("Ingrese la función f(x) como una expresión en Python: ")
     f = lambda x: eval(function_str)
@@ -71,4 +70,4 @@ try:
         print(tabulate(matriz, headers=["Iteración", "a", "f(a)", "pm", "f(pm)", "b", "f(b)", "Error Abs."], tablefmt="fancy_grid"))
 
 except Exception as e:
-    print(f"Error: Invalid input. Please check your function definition and numerical inputs. {e}")
+    print(f"Error: Entrada no válida. Compruebe la definición de la función y las entradas numéricas. {e}")
