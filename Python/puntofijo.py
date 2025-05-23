@@ -1,114 +1,73 @@
-from sympy import symbols, log
-import math
 from tabulate import tabulate
 import numpy as np
-import sympy as sp
-import re
+import math
 
+def fixed_point_iteration(g, x0, tolerance, max_iterations, error_type="abs"):
+    """
+    Encuentra la raíz de una función g utilizando el método de iteración de punto fijo.
 
+    Args:
+        g (función): La función para encontrar el punto fijo de.
+        x0 (float): La estimación inicial.
+        tolerance (float): La tolerancia para la raíz.
+        max_iteraciones (int): El número máximo de iteraciones.
+        tipo_error (str): El tipo de error a utilizar («abs» para absoluto, «rel» para relativo).
 
-def conversion(expr):
-    expr = re.sub(r'(?<!\w)e', 'E', expr)
+    Devuelve:
+        tupla: Una tupla que contiene el valor final de x, el valor de g(x), el número de iteraciones y la matriz de iteraciones.
+    """
+    x_current = x0
+    iteration_count = 0
+    iteration_data = []
 
-
-    expr = re.sub(r'\bln\b', 'log', expr)
-
-    sympy_expr = sp.sympify(expr)
-
-
-    converted_expr = str(sympy_expr).replace('E', 'math.exp(1)')
-
-
-    converted_expr = converted_expr.replace('exp(', 'math.exp(')
-    converted_expr = converted_expr.replace('log(', 'math.log(')
-
-    return converted_expr
-
- 
-
-
-
-def punto_f(g,x0,tol,Nmax,error):
-  
-    g =conversion(g) 
-    
-    def evaluate_expression(x):
-        return eval(g)
-    
-    xant=x0
-    E=0
-    cont=0
-    matriz=[]
-    gxant=evaluate_expression(xant)
-    print(gxant, "gxant",xant,)
-    print(gxant)
-     
-    Eabs=abs(gxant-xant) 
-    
-    if error=="rela":
-        if gxant != 0:
-            E=Eabs/gxant
-            err=Eabs/gxant
-            print("esa fue")
-        else:
-            print("Error: division by zero")
-            E= float('inf')
-            err=float('inf')
+    while iteration_count < max_iterations:
+        x_next = g(x_current)
         
+        if error_type == "abs":
+            error = abs(x_next - x_current)
+        elif error_type == "rel":
+            if x_next != 0:
+                error = abs((x_next - x_current) / x_next)
+            else:
+                print("Error: División por 0 en el cálculo del error relativo.")
+                return x_current, g(x_current), iteration_count, iteration_data
+        else:
+            print("Error: Tipo de error no válido. Escoge 'abs' o 'rel'.")
+            return x_current, g(x_current), iteration_count, iteration_data
+
+        iteration_data.append([iteration_count, x_current, g(x_current), error])
+
+        if error < tolerance:
+            return x_next, g(x_next), iteration_count, iteration_data
+
+        x_current = x_next
+        iteration_count += 1
+
+    print("Alerta: Número máximo de iteraciones alcanzado.")
+    return x_current, g(x_current), iteration_count, iteration_data
+
+
+if __name__ == '__main__':
+    function_str = input("Ingresa la función g(x) (e.g., math.exp(-x)): ")
+    x0 = float(input("Ingresa la estimación inicial x0: "))
+    tolerance = float(input("Ingresa la tolerancia: "))
+    max_iterations = int(input("Ingresa el número máximo de iteraciones: "))
+    error_type = input("Ingresa el tipo de error ('abs' para absoluto, 'rel' para relativo): ")
+
+    def g(x):
+        return eval(function_str)
+
+    if tolerance <= 0:
+        print("Error: La tolerancia debe ser un número positivo.")
+        exit()
+    if max_iterations <= 0:
+        print("Error: El número máximo de iteraciones debe ser un número positivo.")
+        exit()
+
+    x, gx, iteration_count, iteration_data = fixed_point_iteration(g, x0, tolerance, max_iterations, error_type)
+
+    if iteration_count > 0:
+        print(tabulate(iteration_data, headers=["Iteration", "x_current", "g(x_current)", "Error"], tablefmt="fancy_grid"))
+        print(f"\nPunto fijo encontrado: x = {x}, g(x) = {gx} después de {iteration_count} iteraciones.")
     else:
-        E=Eabs
-         
-    
-
-     
-    
-    while E>tol and cont<Nmax:
-        
-            
-         
-        xact=evaluate_expression(float(xant))
-        Eabs=abs(xact-xant)
-        if error=="abs":
-            E=abs(xact-xant)
-        
-        # Verificar si xact es cero
-        if xact != 0:
-            err=Eabs/xact
-            if error=="rela":
-                E=Eabs/xact
-        else:
-            print("Error: division by zero")
-            err = float('inf')
-            if error=="rela":
-                E = float('inf')
-            
-        
-        gxant=evaluate_expression(xant)   
-        matriz.append([cont,xant,gxant,Eabs, err])
-        cont+=1
-        xant=xact
-        
-    
-    gxant=evaluate_expression(xant)  
-      
-    return xant,gxant, cont, matriz
-
-
-
-
- 
- 
- 
- 
-
- 
- 
- 
- 
- 
-   
- 
-#g="e**-x"
-#xant, gxant, cont, matriz = punto_f(g, 1, 10**-4, 100)
-#print(matriz)  
- 
+        print("\nNo se ha encontrado ningún punto fijo dentro de la tolerancia y las iteraciones máximas dadas.")
