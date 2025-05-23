@@ -5,107 +5,78 @@ import re
 
 def conversion(expr):
     expr = re.sub(r'(?<!\w)e', 'E', expr)
-
-
     expr = re.sub(r'\bln\b', 'log', expr)
-
     sympy_expr = sp.sympify(expr)
-
-
     converted_expr = str(sympy_expr).replace('E', 'math.exp(1)')
-
-
     converted_expr = converted_expr.replace('exp(', 'math.exp(')
     converted_expr = converted_expr.replace('log(', 'math.log(')
-
     return converted_expr
 
+def secante():
+    # Get user inputs
+    function_str = input("Ingresa la función f(x): ")
+    x0 = float(input("Ingresa la estimación inicial x0: "))
+    x1 = float(input("Ingresa la estimación inicial x1: "))
+    tolerance = float(input("Ingresa la tolerancia: "))
+    max_iterations = int(input("Ingresa el número máximo de iteraciones: "))
 
+    f = conversion(function_str)
 
-def secante(f, x0, x1, tol, Nmax,error12):
-    
-    f =conversion(f) 
-    
     def evaluate_expression(x):
         return eval(f)
-    
-    f0 = evaluate_expression(x0)
-    f1 = evaluate_expression(x1)
-    E = 0
-    err=0
-    cont = 0
-    matriz = []
-    E="-"
-    err="-"
-    matriz.append([cont, x0, f0, E, err])
-     
-    Eabs=abs(x1-x0) 
-    
-    if error12=="rela":
-        if x0 != 0:
-            E=Eabs/x0
-            err=Eabs/x1
-            print("esa fue")
-        else:
-            print("Error: division by zero")
-            E= float('inf')
-            err=float('inf')
-        
-    else:
-        E=Eabs
-        
-    cont=1
-    matriz.append([cont, x1, f1, Eabs, err])
-     
-    while E > tol and cont < Nmax:
-        cont = cont + 1
 
+    # Initial values
+    previous_x = x0
+    current_x = x1
+    previous_f = evaluate_expression(previous_x)
+    current_f = evaluate_expression(current_x)
+    iteration_number = 0
+    results_matrix = []
+    absolute_error = "-"
+    relative_error = "-"
 
-        denom = f1 - f0
-        if denom == 0:
-            print("Error: division por 0")
+    # Add initial row to the results matrix
+    results_matrix.append([iteration_number, previous_x, previous_f, absolute_error, relative_error])
+
+    iteration_number = 1
+    results_matrix.append([iteration_number, current_x, current_f, absolute_error, relative_error])
+
+    while iteration_number <= max_iterations:
+        denominator = current_f - previous_f
+        if denominator == 0:
+            print("Error: División por 0!")
             break
 
-        xact = x1 - f1 * (x1 - x0) / denom
-        fact = evaluate_expression(xact)
-        
-        Eabs = abs(xact - x1)
-         
-    
-        if error12=="rela":
-            if xact != 0:
-                E=Eabs/xact
-                err=Eabs/xact
-                print("esa fue")
-            else:
-                print("Error: division by zero")
-                E= float('inf')
-                err=float('inf')
-        
+        next_x = current_x - current_f * (current_x - previous_x) / denominator
+        next_f = evaluate_expression(next_x)
+
+        # Calculate errors
+        absolute_error = abs(next_x - current_x)
+        if next_x != 0:
+            relative_error = abs(next_x - current_x) / abs(next_x)
         else:
-            E=Eabs
+            relative_error = float('inf')
 
+        results_matrix.append([iteration_number + 1, next_x, next_f, absolute_error, relative_error])
 
-        if xact != 0:
-            err = Eabs / xact
-        else:
-            print("Error: division por 0")
-            err = float('inf')
+        # Check stopping conditions
+        if absolute_error < tolerance:
+            print(f"El método secante convergió después de {iteration_number} iteraciones.")
+            break
 
-        matriz.append([cont-1, xact, fact, Eabs, err]) 
-        x0 = x1
-        f0 = f1
-        x1 = xact
-        f1 = fact
-         
-    return matriz
+        previous_x = current_x
+        current_x = next_x
+        previous_f = current_f
+        current_f = next_f
 
- 
+        iteration_number += 1
 
-f="e**-x - x"
+    else:
+        print("El método de la secante no convergió en el número máximo de iteraciones.")
 
+    headers = ["Iteración", "x", "f(x)", "Error absoluto", "Error relativo"]
+    table = tabulate(results_matrix, headers=headers, tablefmt="grid")
+    print(table)
 
-
- 
-
-
+# Ejemplo de uso:
+secante()
