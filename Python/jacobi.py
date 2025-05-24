@@ -1,4 +1,5 @@
 import numpy as np
+from tabulate import tabulate
 import ast
 
 def str_to_numpy_matrix(matrix_str):
@@ -6,56 +7,53 @@ def str_to_numpy_matrix(matrix_str):
     Convierte una cadena de texto que representa una matriz o vector en un objeto numpy array.
     """
     try:
-        # Evaluar la cadena para convertirla en una lista de listas (matriz) o una lista (vector)
         matrix_list = ast.literal_eval(matrix_str)
-        
-        # Convertir la lista en un array de numpy
         matrix_np = np.array(matrix_list, dtype=np.float64)
         
         return matrix_np
     except Exception as e:
-        print(f"Error converting string to numpy matrix: {e}")
+        print(f"Error al convertir la cadena a matriz numpy: {e}")
         return None
     
 
-def jacobi(A, b, x0, tol, max_iter,error12):
-    A = str_to_numpy_matrix(A)
-    b = str_to_numpy_matrix(b)
-    x0 = str_to_numpy_matrix(x0)
-    matriz = []
-     
-    D = np.diag(np.diag(A))
-    LU = A - D
-    x = x0
+def jacobi(matrix_a_str, vector_b_str, initial_guess_str, tolerance, max_iterations, error_type):
+    matrix_a = str_to_numpy_matrix(matrix_a_str)
+    vector_b = str_to_numpy_matrix(vector_b_str)
+    initial_guess = str_to_numpy_matrix(initial_guess_str)
+    results_matrix = []
+    diagonal_matrix = np.diag(np.diag(matrix_a))
+    lu_matrix = matrix_a - diagonal_matrix
+    solution_vector = initial_guess
     
-    for i in range(max_iter):
-        D_inv = np.linalg.inv(D)
-        x_aux = x
-        x = np.dot(D_inv, np.dot(-LU, x)) + np.dot(D_inv, b)
-        errorabs = np.linalg.norm(x - x_aux)
+    for iteration_count in range(max_iterations):
+        diagonal_inverse = np.linalg.inv(diagonal_matrix)
+        previous_solution = solution_vector
+        solution_vector = np.dot(diagonal_inverse, np.dot(-lu_matrix, solution_vector)) + np.dot(diagonal_inverse, vector_b)
+        absolute_error = np.linalg.norm(solution_vector - previous_solution)
         
-        # Verificar si la norma de x es cero
-        if np.linalg.norm(x) != 0:
-            relative_error = errorabs / np.linalg.norm(x)
+        if np.linalg.norm(solution_vector) != 0:
+            relative_error = absolute_error / np.linalg.norm(solution_vector)
         else:
-            print("Error: division by zero")
+            print("Error: División por 0")
             relative_error = float('inf')
         
-        matriz.append([i, x.copy(), errorabs, relative_error]) 
-        if error12=="rela":
-            error=relative_error
+        results_matrix.append([iteration_count, solution_vector.copy().tolist(), absolute_error, relative_error]) 
+        if error_type=="rela":
+            error = relative_error
         else:
-            error=errorabs
+            error = absolute_error
             
-        if error < tol:
+        if error < tolerance:
             break
-    return matriz
+    return results_matrix
 
+matrix_a_str = input("Ingresa la matriz A (e.g., [[4,1],[1,3]]): ")
+vector_b_str = input("Ingresa el vector B (e.g., [1,2]): ")
+initial_guess_str = input("Ingresa la estimación inicial x0 (e.g., [0,0]): ")
+tolerance = float(input("Ingresa la tolerancia: "))
+max_iterations = int(input("Ingresa el número de iteraciones: "))
+error_type = input("Ingresa el tipo de error (rela para relativo o abs para absoluto): ")
 
+results = jacobi(matrix_a_str, vector_b_str, initial_guess_str, tolerance, max_iterations, error_type)
 
-#A = np.array([[10, -1, 2, 0], [-1, 11, -1, 3], [2, -1, 10, -1], [0, 3, -1, 8]])
-#b = np.array([[6], [25], [-11], [15]])
-#x0 = np.zeros(4)
-
-#x = jacobi(A, b, x0, 10**-6, 500)
-#print("Solution:", x)
+print(tabulate(results, headers=["Iteración", "Solución", "Error absoluto", "Error relativo"], tablefmt="fancy_grid"))

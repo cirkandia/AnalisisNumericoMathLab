@@ -13,7 +13,6 @@ def conversion(expr):
     return converted_expr
 
 def secante():
-    # Get user inputs
     function_str = input("Ingresa la función f(x): ")
     x0 = float(input("Ingresa la estimación inicial x0: "))
     x1 = float(input("Ingresa la estimación inicial x1: "))
@@ -35,7 +34,6 @@ def secante():
     absolute_error = "-"
     relative_error = "-"
 
-    # Add initial row to the results matrix
     results_matrix.append([iteration_number, previous_x, previous_f, absolute_error, relative_error])
 
     iteration_number = 1
@@ -50,7 +48,6 @@ def secante():
         next_x = current_x - current_f * (current_x - previous_x) / denominator
         next_f = evaluate_expression(next_x)
 
-        # Calculate errors
         absolute_error = abs(next_x - current_x)
         if next_x != 0:
             relative_error = abs(next_x - current_x) / abs(next_x)
@@ -59,7 +56,6 @@ def secante():
 
         results_matrix.append([iteration_number + 1, next_x, next_f, absolute_error, relative_error])
 
-        # Check stopping conditions
         if absolute_error < tolerance:
             print(f"El método secante convergió después de {iteration_number} iteraciones.")
             break
