@@ -6,99 +6,74 @@ import re
 
 def conversion(expr):
     expr = re.sub(r'(?<!\w)e', 'E', expr)
-
-
     expr = re.sub(r'\bln\b', 'log', expr)
-
     sympy_expr = sp.sympify(expr)
-
-
     converted_expr = str(sympy_expr).replace('E', 'math.exp(1)')
-
-
     converted_expr = converted_expr.replace('exp(', 'math.exp(')
     converted_expr = converted_expr.replace('log(', 'math.log(')
 
     return converted_expr
 
-def C5_raices_mult(f, df, d2f, x0, tol, Nmax,error12):
+def multiple_roots(function_str, derivative_1_str, derivative_2_str, initial_guess, tolerance, max_iterations, error_type):
     
-    f = conversion(f)
-    df = conversion(df)
-    d2f = conversion(d2f)
+    function_str = conversion(function_str)
+    derivative_1_str = conversion(derivative_1_str)
+    derivative_2_str = conversion(derivative_2_str)
     
-    def evaluate_expression(x):
-        return eval(f)
-    def evaluate_expression2(x):
-        return eval(df)
-    def evaluate_expression3(x):
-        return eval(d2f)
+    def evaluate_function(x):
+        return eval(function_str)
+    def evaluate_derivative_1(x):
+        return eval(derivative_1_str)
+    def evaluate_derivative_2(x):
+        return eval(derivative_2_str)
     
-    xant = x0
-    fant = evaluate_expression(xant)
-    cont = 0
-    matriz = []
-   
-     
+    previous_root = initial_guess
+    previous_function_value = evaluate_function(previous_root)
+    iteration_count = 0
+    results_matrix = []
 
     while True:
 
-        dfx = evaluate_expression2(xant)
-        d2fx = evaluate_expression3(xant)
+        derivative_1_value = evaluate_derivative_1(previous_root)
+        derivative_2_value = evaluate_derivative_2(previous_root)
         
-        denom = (dfx)**2 - fant * d2fx
-        if denom == 0:
-            print("Error: division by zero")
+        denominator = (derivative_1_value)**2 - previous_function_value * derivative_2_value
+        if denominator == 0:
+            print("Error: División por 0")
             break
         
-        xact = xant - fant * dfx / denom
-        Eabs=abs(xact-xant)
-        err=Eabs/xact
-         
-        fact = evaluate_expression(xact)
-         
-         
+        current_root = previous_root - previous_function_value * derivative_1_value / denominator
+        absolute_error=abs(current_root-previous_root)
+        relative_error=absolute_error/current_root
+        current_function_value = evaluate_function(current_root)
         
-        if error12=="rela":
-            if xant != 0:
-                E=Eabs/xact
-                 
-           
+        if error_type=="rela":
+            if previous_root != 0:
+                error=absolute_error/current_root
             else:
-                print("Error: division by zero")
-                E= float('inf')
-                err=float('inf')
+                print("Error: División por 0")
+                error= float('inf')
+                relative_error=float('inf')
         
         else:
-            E=Eabs
-         
-        matriz.append([cont, xant, fant, dfx, d2fx, Eabs, err])
-        xant = xact
-        fant = fact
-        cont += 1
-        if E < tol or cont >= Nmax:
-             
+            error=absolute_error
+        results_matrix.append([iteration_count, previous_root, previous_function_value, derivative_1_value, derivative_2_value, absolute_error, relative_error])
+        previous_root = current_root
+        previous_function_value = current_function_value
+        iteration_count += 1
+        if error < tolerance or iteration_count >= max_iterations:
             break
 
-    return matriz
+    return results_matrix
 
- 
+function_str = input("Ingresa la función f(x): ")
+derivative_1_str = input("Ingresa la primera derivada df(x): ")
+derivative_2_str = input("Ingresa la segunda derivada d2f(x): ")
+initial_guess = float(input("Ingresa la estimación inicial x0: "))
+tolerance = float(input("Ingresa la tolerancia: "))
+max_iterations = int(input("Ingresa el número máximo de iteraciones: "))
+error_type = input("Ingresa el tipo de error (rela para relativo o abs para absoluto): ")
 
- 
+results = multiple_roots(function_str, derivative_1_str, derivative_2_str, initial_guess, tolerance, max_iterations, error_type)
 
- 
-
- 
-
-f="e**(x-2)-log(x-1)-x**2+4*x-5"
-df="-2*x+e**(x-2)-(1/(x-1))+4"
-d2f="e**(x-2)+ 1/((x-1)**2)-2"
-
- 
-# Ejecutar el método
-
-#print(matriz)
-
-#print(tabulate(matriz, headers=["Iteración", "x", "f(x)", "df(x)", "d2f(x)", "Error Abs."], tablefmt="fancy_grid"))
-
-      
+print(tabulate(results, headers=["Iteración", "x", "f(x)", "df(x)", "d2f(x)", "Error absoluto", "Error relativo"], tablefmt="fancy_grid"))
