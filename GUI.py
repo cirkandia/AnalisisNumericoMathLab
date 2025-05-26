@@ -3,18 +3,19 @@ from tkinter import ttk, messagebox
 import numpy as np
 from tabulate import tabulate
 import importlib
+import inspect
 
-# Diccionario de métodos con nombre legible y nombre del módulo
+# Diccionario de métodos con nombre legible y nombre del módulo + función
 METHODS = {
-    "Bisección": "biseccion",
+    "Bisección": ("biseccion", "biseccion"),
     "Regla Falsa": ("regla_falsa", "false_position_method"),
     "Newton": ("newton", "newton_method"),
-    "Secante": "secante",
+    "Secante": ("secante", "secante"),
     "Punto Fijo": ("puntofijo", "fixed_point_iteration"),
     "Raíces Múltiples": ("raices_m", "multiple_roots"),
-    "Jacobi": "jacobi",
+    "Jacobi": ("jacobi", "jacobi"),
     "Gauss-Seidel": ("gauss_seidel", "gauss_seidel_method"),
-    "SOR": ("SOR", "sor_method"),
+    "SOR": "sor_method",
     "Gauss con Pivoteo": "gauss_piv",
 }
 
@@ -39,7 +40,13 @@ class App(tk.Tk):
             tk.Button(self, text=name, width=30, command=lambda m=name: self.load_method_form(m)).pack(pady=5)
 
     def load_method_form(self, method_name):
-        module_name, function_name = METHODS[method_name]
+        method_info = METHODS[method_name]
+
+        if isinstance(method_info, tuple):
+            module_name, function_name = method_info
+        else:
+            module_name = function_name = method_info
+
         try:
             module = importlib.import_module(f"{MODULE_PATH}.{module_name}")
             func = getattr(module, function_name)
@@ -63,11 +70,13 @@ class App(tk.Tk):
         f_entry.pack(pady=5)
 
         # Inspeccionamos parámetros (ignoramos 'f' si está primero)
-        import inspect
         sig = inspect.signature(func)
         params = list(sig.parameters.keys())
-        if params[0] == 'f':
+        if params and params[0] == 'f':
             params = params[1:]
+            use_f = True
+        else:
+            use_f = False
 
         for param in params:
             tk.Label(self, text=param).pack()
@@ -77,9 +86,13 @@ class App(tk.Tk):
 
         def execute():
             try:
-                f_str = f_entry.get()
-                f = lambda x: eval(f_str, {"np": np, "x": x})
-                args = [f]
+                args = []
+
+                if use_f:
+                    f_str = f_entry.get()
+                    f = lambda x: eval(f_str, {"np": np, "x": x})
+                    args.append(f)
+
                 for param in params:
                     value = float(entries[param].get())
                     args.append(value)
@@ -103,8 +116,11 @@ class App(tk.Tk):
         text.pack(padx=10, pady=10)
 
         if isinstance(result, tuple) and isinstance(result[-1], list):
-            table = tabulate(result[-1], headers="keys" if isinstance(result[-1][0], dict) else "firstrow", tablefmt="grid")
-            text.insert("1.0", table)
+            try:
+                table = tabulate(result[-1], headers="keys" if isinstance(result[-1][0], dict) else "firstrow", tablefmt="grid")
+                text.insert("1.0", table)
+            except Exception:
+                text.insert("1.0", str(result))
         else:
             text.insert("1.0", str(result))
 

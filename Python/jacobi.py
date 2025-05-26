@@ -45,15 +45,6 @@ def jacobi(matrix_a_str, vector_b_str, initial_guess_str, tolerance, max_iterati
             
         if error < tolerance:
             break
-    return results_matrix
 
-matrix_a_str = input("Ingresa la matriz A (e.g., [[4,1],[1,3]]): ")
-vector_b_str = input("Ingresa el vector B (e.g., [1,2]): ")
-initial_guess_str = input("Ingresa la estimación inicial x0 (e.g., [0,0]): ")
-tolerance = float(input("Ingresa la tolerancia: "))
-max_iterations = int(input("Ingresa el número de iteraciones: "))
-error_type = input("Ingresa el tipo de error (rela para relativo o abs para absoluto): ")
-
-results = jacobi(matrix_a_str, vector_b_str, initial_guess_str, tolerance, max_iterations, error_type)
-
-print(tabulate(results, headers=["Iteración", "Solución", "Error absoluto", "Error relativo"], tablefmt="fancy_grid"))
+    headers = ["Iteración", "Solución", "Error absoluto", "Error relativo"]
+    return (headers, results_matrix)
