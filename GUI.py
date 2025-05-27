@@ -4,6 +4,7 @@ import numpy as np
 from tabulate import tabulate
 import importlib
 import inspect
+from Python.supCp3 import interpolacion_newton,interpoloacion_lagrange, spline_cubico, SUBspline_lineal, Vandermonde 
 
 # Diccionario de métodos con nombre legible y nombre del módulo + función
 METHODS = {
@@ -17,11 +18,18 @@ METHODS = {
     "Gauss-Seidel": ("gauss_seidel", "gauss_seidel_method"),
     "SOR": ("SOR", "sor_method"),
     "Gauss con Pivoteo": "gauss_piv",
+    ###########################################################
+    # Si se agregan Mas metodos aqui hay que revisar el método show_chapter3_menu
+    ###########################################################
     "vandermonde" : ("Vandermonde", "interpolacion_vandermonde"),
+    "Spline lineal": ("spline_lineal", "spline_lineal_con_polinomios"),
+    "Spline cúbico": ("spline_cubico", "spline_cubico"),
+    "Interp de Lagrange": ("interpoloacion_lagrange", "interpolacion_lagrange"),
+    "Interp de Newton": ("interpolacion_newton", "interpolacion_newton"),
 }
 
 # Ruta base donde están los scripts
-MODULE_PATH = "Python"
+MODULE_PATH = "Python.supCp3"
 
 # Traducción de parámetros comunes
 SPANISH_PARAMS = {
@@ -34,6 +42,12 @@ SPANISH_PARAMS = {
     "error_type": "Tipo de error (abs/rel)",
     "w": "Factor de relajación (w)"
 }
+
+CHAPTER3_METHODS = {"vandermonde" : ("Vandermonde", "interpolacion_vandermonde"),
+    "Spline lineal": ("spline_lineal", "spline_lineal_con_polinomios"),
+    "Spline cúbico": ("spline_cubico", "spline_cubico"),
+    "Interp de Lagrange": ("interpoloacion_lagrange", "interpolacion_lagrange"),
+    "Interp de Newton": ("interpolacion_newton", "interpolacion_newton")}
 
 class App(tk.Tk):
     def __init__(self):
@@ -49,10 +63,23 @@ class App(tk.Tk):
 
         tk.Label(self, text="Seleccione un Método", font=("Arial", 16)).pack(pady=20)
 
-        for name in METHODS:
-            tk.Button(self, text=name, width=35, command=lambda m=name: self.load_method_form(m)).pack(pady=5)
+        # Solo los métodos que NO están en CHAPTER3_METHODS
+        for name in [n for n in METHODS if n not in CHAPTER3_METHODS]:
+            tk.Button(self, text=name, width=35, command=lambda m=name: self.load_method_form(m, from_chapter3=False)).pack(pady=5)
+        tk.Button(self, text="Capitulo 3", width=35, command=self.show_chapter3_menu).pack(pady=5)
 
-    def load_method_form(self, method_name):
+    def show_chapter3_menu(self):
+        for widget in self.winfo_children():
+            widget.destroy()
+
+        tk.Label(self, text="Capítulo 3 - Interpolación", font=("Arial", 16)).pack(pady=20)
+
+        # Solo los métodos de CHAPTER3_METHODS
+        for name in CHAPTER3_METHODS:
+            tk.Button(self, text=name, width=35, command=lambda m=name: self.load_method_form(m, from_chapter3=True)).pack(pady=5)
+        tk.Button(self, text="Volver", width=35, command=self.show_main_menu).pack(pady=20)
+
+    def load_method_form(self, method_name, from_chapter3=False):
         method_info = METHODS[method_name]
 
         if isinstance(method_info, tuple):
@@ -60,14 +87,23 @@ class App(tk.Tk):
         else:
             module_name = function_name = method_info
 
-        try:
-            module = importlib.import_module(f"{MODULE_PATH}.{module_name}")
-            func = getattr(module, function_name)
-        except Exception as e:
-            messagebox.showerror("Error", f"No se pudo cargar el método: {e}")
+        MODULE_PATHS = ["Python.supCp3", "Python"]
+
+        for base in MODULE_PATHS:
+            try:
+                module = importlib.import_module(f"{base}.{module_name}")
+                func = getattr(module, function_name)
+                break
+            except Exception:
+                func = None
+        else:
+            messagebox.showerror("Error", f"No se pudo cargar el método '{method_name}' desde ningún módulo.")
             return
 
-        self.show_input_form(method_name, func)
+        if from_chapter3:
+            self.show_input_form_chapter3(method_name, func)
+        else:
+            self.show_input_form(method_name, func)
 
     def show_input_form(self, method_name, func):
         for widget in self.winfo_children():
@@ -113,6 +149,40 @@ class App(tk.Tk):
                         args.append(float(val))
 
                 result = func(*args)
+                self.show_result(method_name, result)
+
+            except Exception as e:
+                messagebox.showerror("Error", str(e))
+
+        tk.Button(self, text="Ejecutar", command=execute).pack(pady=20)
+        tk.Button(self, text="Volver", command=self.show_main_menu).pack()
+
+    def show_input_form_chapter3(self, method_name, func):
+        for widget in self.winfo_children():
+            widget.destroy()
+
+        tk.Label(self, text=f"{method_name} - Parámetros (Capítulo 3)", font=("Arial", 14)).pack(pady=10)
+
+        entries = {}
+
+        # Entradas para las listas de números
+        tk.Label(self, text="Lista de X (ejemplo: 1,2,3,4)").pack()
+        x_entry = tk.Entry(self, width=40)
+        x_entry.pack(pady=5)
+
+        tk.Label(self, text="Lista de Y (ejemplo: 5,6,7,8)").pack()
+        y_entry = tk.Entry(self, width=40)
+        y_entry.pack(pady=5)
+
+        def execute():
+            try:
+                x_str = x_entry.get().strip()
+                y_str = y_entry.get().strip()
+                # Convierte las cadenas a listas de enteros
+                x_vals = [int(val) for val in x_str.split(",") if val.strip() != ""]
+                y_vals = [int(val) for val in y_str.split(",") if val.strip() != ""]
+
+                result = func(x_vals, y_vals)
                 self.show_result(method_name, result)
 
             except Exception as e:

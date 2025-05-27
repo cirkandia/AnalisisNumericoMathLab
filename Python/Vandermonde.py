@@ -7,7 +7,8 @@ import supCp3.spline_cubico
 import supCp3.SUBspline_lineal
 #import supCp3.Vandermonde
 
-def interpolacion_vandermonde():
+def interpolacion_vandermonde(ValoresX, ValoresY):
+    print(ValoresX, ValoresY)
     print("=== MÉTODO DE VANDERMONDE ===")
     print("Incluye análisis de tiempo, precisión y número de condición.\n")
     
