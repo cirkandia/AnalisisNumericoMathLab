@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 #import supCp3.interpoloacion_lagrange
 import supCp3.interpolacion_newton
 import supCp3.spline_cubico
-import Python.supCp3.SUBspline_lineal
+import supCp3.SUBspline_lineal
 import supCp3.Vandermonde
 
 def interpolacion_lagrange():
@@ -79,10 +79,25 @@ def interpolacion_lagrange():
     plt.show()
 
     if input("\n¿Desea comparar con otros metodos? (s/n): ").strip().lower() == 's':
-        supCp3.spline_cubico.spline_cubico(x,y)
-        supCp3.SUBspline_lineal.spline_lineal_con_polinomios(x,y)
-        supCp3.Vandermonde.interpolacion_vandermonde(x,y)
-        supCp3.interpolacion_newton.interpolacion_newton(x,y)
+        SPCC = supCp3.spline_cubico.spline_cubico(x,y)
+        SPL = supCp3.SUBspline_lineal.spline_lineal(x,y)
+        VAN = supCp3.Vandermonde.interpolacion_vandermonde(x,y)
+        INT = supCp3.interpolacion_newton.interpolacion_newton(x,y)
+        
+        plt.figure(figsize=(10, 6))
+        plt.plot(x, y, 'ro', label='Puntos dados')
+        plt.plot(x_plot, y_lagrange, 'b-', label='Lagrange')
+        plt.plot(VAN[0], VAN[1], 'k-', label='Vandermonde')
+        plt.plot(SPL[0], SPL[1], 'g--', label='Pline lineal')
+        plt.plot(INT[0], INT[1], 'c--', label='Newton')
+        plt.plot(SPCC[0], SPCC[1], 'y--', label='Spline Cubico')
+        plt.title("Comparacion General")
+        plt.xlabel("x")
+        plt.ylabel("y")
+        plt.legend()
+        plt.grid()
+        plt.show()
+        print("comparacion general")
 
 
 # Ejecutar

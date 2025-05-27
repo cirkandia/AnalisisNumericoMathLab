@@ -50,10 +50,25 @@ def spline_lineal_con_polinomios():
     plt.show()
 
     if input("\n¿Desea comparar con otros metodos? (s/n): ").strip().lower() == 's':
-        supCp3.interpoloacion_lagrange.interpolacion_lagrange(x,y)
-        supCp3.interpolacion_newton.interpolacion_newton(x,y)
-        supCp3.spline_cubico.spline_cubico(x,y)
-        supCp3.Vandermonde.interpolacion_vandermonde(x,y)
+        ILG = supCp3.interpoloacion_lagrange.interpolacion_lagrange(x,y)
+        INT = supCp3.interpolacion_newton.interpolacion_newton(x,y)
+        SPCC =  supCp3.spline_cubico.spline_cubico(x,y)
+        VAN =supCp3.Vandermonde.interpolacion_vandermonde(x,y)
+
+        plt.figure(figsize=(10, 6))
+        plt.plot(x, y, 'ro', label='Puntos dados')
+        plt.plot(VAN[0], VAN[1], 'b-', label='Vandermonde')
+        plt.plot(ILG[0],ILG[1], 'm--', label='Lagrange')
+        plt.plot(INT[0], INT[1], 'c--', label='Newton')
+        plt.plot(SPCC[0], SPCC[1], 'y--', label='Spline Cubico')
+        plt.plot(x_plot, y_spline, 'g-', label='Spline Lineal')
+        plt.title("Comparacion General")
+        plt.xlabel("x")
+        plt.ylabel("y")
+        plt.legend()
+        plt.grid()
+        plt.show()
+        print("comparacion general")
 
 # Ejecutar
 spline_lineal_con_polinomios()

@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
 
-def SUBspline_lineal(inx,iny):
+def spline_lineal(inx,iny):
     x=inx
     y=iny
 
@@ -10,7 +10,7 @@ def SUBspline_lineal(inx,iny):
     spline = interp1d(x, y, kind='linear')
 
     # --- Mostrar polinomios por tramo ---
-    print("\n🔹 POLINOMIOS POR TRAMO:")
+   # print("\n🔹 POLINOMIOS POR TRAMO:")
     polinomios = []
     for i in range(len(x) - 1):
         x0, x1 = x[i], x[i + 1]

@@ -22,14 +22,14 @@ def interpolacion_vandermonde(inx,iny):
     tiempo_ejecucion = end_time - start_time
 
     # --- Precisión: comparación con numpy.polyfit (referencia) ---
-    a_polyfit = np.polyfit(x, y, n)[::-1]  # polyfit devuelve coeficientes en orden descendente
+    #a_polyfit = np.polyfit(x, y, n)[::-1]  # polyfit devuelve coeficientes en orden descendente
 
     # --- Resultados ---
 
     # --- Gráfica ---
     x_plot = np.linspace(min(x), max(x), 100)
     y_vander = np.polyval(a[::-1], x_plot)  # polyval espera orden descendente
-    y_polyfit = np.polyval(a_polyfit[::-1], x_plot)
+   # y_polyfit = np.polyval(a_polyfit[::-1], x_plot)
 
     return [x_plot, y_vander,tiempo_ejecucion,cond_num]
 

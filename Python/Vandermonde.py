@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import supCp3.interpoloacion_lagrange
 import supCp3.interpolacion_newton
 import supCp3.spline_cubico
-import Python.supCp3.SUBspline_lineal
+import supCp3.SUBspline_lineal
 #import supCp3.Vandermonde
 
 def interpolacion_vandermonde():
@@ -62,10 +62,10 @@ def interpolacion_vandermonde():
     plt.show()
 
     if input("\n¿Desea comparar con otros métodos? (s/n): ").strip().lower() == 's':
-        ILG=[supCp3.interpoloacion_lagrange.interpolacion_lagrange(x,y)]
-        INT=[supCp3.interpolacion_newton.interpolacion_newton(x,y)]
-        SPCC=[supCp3.spline_cubico.spline_cubico(x,y)]
-        SPL=[supCp3.SUBspline_lineal.SUBspline_lineal(x,y)]
+        ILG=supCp3.interpoloacion_lagrange.interpolacion_lagrange(x,y)
+        INT=supCp3.interpolacion_newton.interpolacion_newton(x,y)
+        SPCC=supCp3.spline_cubico.spline_cubico(x,y)
+        SPL=supCp3.SUBspline_lineal.spline_lineal(x,y)
 
         plt.figure(figsize=(10, 6))
         plt.plot(x, y, 'ro', label='Puntos dados')
@@ -81,7 +81,7 @@ def interpolacion_vandermonde():
         plt.grid()
         plt.show()
         print("comparacion general")
-        print("tiempo de ejecucion", SPL[2])
+        print("polinomios", SPL[2])
         #print("numero de condicion", SPL[3])
 
 # Ejecutar
