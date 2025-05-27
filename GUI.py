@@ -17,6 +17,7 @@ METHODS = {
     "Gauss-Seidel": ("gauss_seidel", "gauss_seidel_method"),
     "SOR": ("SOR", "sor_method"),
     "Gauss con Pivoteo": "gauss_piv",
+    "vandermonde" : ("Vandermonde", "interpolacion_vandermonde"),
 }
 
 # Ruta base donde están los scripts
