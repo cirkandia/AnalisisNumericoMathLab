@@ -7,19 +7,35 @@ import supCp3.spline_cubico
 import supCp3.SUBspline_lineal
 #import supCp3.Vandermonde
 
-def interpolacion_vandermonde(ValoresX, ValoresY):
+def interpolacion_vandermonde(ValoresX=None, ValoresY=None):  #  Parámetros opcionales añadidos
     print(ValoresX, ValoresY)
     print("=== MÉTODO DE VANDERMONDE ===")
     print("Incluye análisis de tiempo, precisión y número de condición.\n")
     
     # Entrada de datos
-    n = int(input("Ingrese el número de puntos (n+1): ")) - 1
-    x = []
-    y = []
-    print("\nIngrese los puntos (x_i, y_i):")
-    for i in range(n + 1):
-        x.append(float(input(f"x_{i}: ")))
-        y.append(float(input(f"y_{i}: ")))
+    if ValoresX is None or ValoresY is None:  #  Lógica para entrada manual/automática
+        n = int(input("Ingrese el número de puntos (n+1): ")) - 1
+        x = []
+        y = []
+        print("\nIngrese los puntos (x_i, y_i):")
+        for i in range(n + 1):
+            #  Validación incremental de x
+            while True:
+                x_val = float(input(f"x_{i}: "))
+                if i > 0 and x_val <= x[-1]:
+                    print(f"Error: x debe ser mayor que {x[-1]}")
+                    continue
+                y_val = float(input(f"y_{i}: "))
+                x.append(x_val)
+                y.append(y_val)
+                break
+    else:
+        #  Validación para arrays de entrada
+        x = np.array(ValoresX)
+        y = np.array(ValoresY)
+        if not np.all(np.diff(x) > 0):
+            raise ValueError("Los valores de x deben estar en orden creciente")
+
     x = np.array(x)
     y = np.array(y)
 
