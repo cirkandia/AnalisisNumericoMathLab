@@ -56,25 +56,43 @@ METHODS = {
         "required_inputs": ["Matriz A", "Vector b", "Vector inicial x0", "Tolerancia", "Máximo iteraciones"],
         "example": "Sistema: 4x + y = 7, x + 3y = 8"
     },
-    "SOR": {
-        "module": ("SOR", "sor_method"),
-        "description": "Método de sobre-relajación sucesiva, generalización de Gauss-Seidel con factor w.",
-        "required_inputs": ["Matriz A", "Vector b", "Vector inicial x0", "Factor w", "Tolerancia", "Máximo iteraciones"],
-        "example": "Sistema con w = 1.2 para acelerar convergencia"
-    },
-    "Vandermonde": {
-        "module": ("Vandermonde", "interpolacion_vandermonde"),
-        "description": "Interpolación polinomial usando matriz de Vandermonde.",
-        "required_inputs": ["Puntos x", "Valores y", "Punto a evaluar"],
-        "example": "Puntos: (0,1), (1,4), (2,9) para f(x) = x^2 + 1"
-    },
-    "Interpolación Newton": {
-        "module": ("interpolacion_newton", "newton_interpolation"),
-        "description": "Interpolación usando diferencias divididas de Newton.",
-        "required_inputs": ["Puntos x", "Valores y", "Punto a evaluar"],
-        "example": "Datos tabulados para aproximar función desconocida"
+        "SOR": {
+            "module": ("SOR", "sor_method"),
+            "description": "Método de sobre-relajación sucesiva, generalización de Gauss-Seidel con factor w.",
+            "required_inputs": ["Matriz A", "Vector b", "Vector inicial x0", "Factor w", "Tolerancia", "Máximo iteraciones"],
+            "example": "Sistema con w = 1.2 para acelerar convergencia"
+        },
+        "Vandermonde": {
+            "module": ("supCp3.Vandermonde", "interpolacion_vandermonde"),
+            "description": "Interpolación polinomial usando matriz de Vandermonde.",
+            "required_inputs": ["Puntos x", "Valores y"],
+            "example": "Puntos: (0,1), (1,4), (2,9)"
+        },
+        "Interpolación Newton": {
+            "module": ("Python.interpolacion_newton", "interpolacion_newton"),
+            "description": "Interpolación usando diferencias divididas de Newton.",
+            "required_inputs": ["Puntos x", "Valores y", "Punto a evaluar"],
+            "example": "Datos tabulados para aproximar función desconocida"
+        },
+        "Spline Lineal": {
+            "module": ("supCp3.SUBspline_lineal", "spline_lineal_con_polinomios"),
+            "description": "Interpolación lineal por tramos.",
+            "required_inputs": ["Puntos x", "Valores y"],
+            "example": "Puntos: (0,1), (1,2), (2,3)"
+        },
+        "Spline Cúbico": {
+            "module": ("supCp3.spline_cubico", "spline_cubico"),
+            "description": "Interpolación cúbica por tramos.",
+            "required_inputs": ["Puntos x", "Valores y"],
+            "example": "Puntos: (0,1), (1,8), (2,27)"
+        },
+        "Interpolación Lagrange": {
+            "module": ("supCp3.interpoloacion_lagrange", "interpolacion_lagrange"),
+            "description": "Interpolación usando el polinomio de Lagrange.",
+            "required_inputs": ["Puntos x", "Valores y"],
+            "example": "Datos tabulados para aproximar función desconocida"
+        }
     }
-}
 
 # Traducción de parámetros comunes
 SPANISH_PARAMS = {
@@ -135,7 +153,7 @@ class App(tk.Tk):
         categories = {
             "Ecuaciones No Lineales": ["Bisección", "Regla Falsa", "Newton", "Secante", "Punto Fijo", "Raíces Múltiples"],
             "Sistemas Lineales": ["Jacobi", "Gauss-Seidel", "SOR"],
-            "Interpolación": ["Vandermonde", "Interpolación Newton"]
+            "Interpolación": ["Vandermonde", "Interpolación Newton", "Interpolación Lagrange", "Spline Lineal", "Spline Cúbico"]
         }
 
         for i, (category, methods) in enumerate(categories.items()):
@@ -221,7 +239,13 @@ class App(tk.Tk):
             module_name = function_name = method_info
 
         try:
-            module = importlib.import_module(f"{MODULE_PATH}.{module_name}")
+            if "supCp3" in module_name:
+                parts = module_name.split(".")
+                module_path = f"{MODULE_PATH}.{parts[0]}"
+                module_name = parts[1]
+                module = importlib.import_module(f"{module_path}.{module_name}")
+            else:
+                module = importlib.import_module(f"{MODULE_PATH}.{module_name}")
             func = getattr(module, function_name)
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo cargar el método: {e}")
