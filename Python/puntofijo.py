@@ -22,7 +22,7 @@ def fixed_point_iteration(g, x0, tolerance, max_iterations, error_type="abs"):
     iteration_data = []
 
     while iteration_count < max_iterations:
-        x_next = g(x_current)
+        x_next = eval(g, {"x": x_current, "np": np, "math": math})
         
         if error_type == "abs":
             error = abs(x_next - x_current)
@@ -35,10 +35,10 @@ def fixed_point_iteration(g, x0, tolerance, max_iterations, error_type="abs"):
         else:
             raise ValueError("Tipo de error no válido. Usa 'abs' o 'rel'.")
 
-        iteration_data.append([iteration_count, x_current, g(x_current), error])
+        iteration_data.append([iteration_count, x_current, eval(g, {"x": x_current, "np": np, "math": math}), error])
 
         if error < tolerance:
-            return x_next, g(x_next), iteration_count + 1, iteration_data
+            return x_next, eval(g, {"x": x_next, "np": np, "math": math}), iteration_count + 1, iteration_data
 
         x_current = x_next
         iteration_count += 1
