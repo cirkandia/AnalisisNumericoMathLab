@@ -23,11 +23,23 @@ METHODS = {
 # Ruta base donde están los scripts
 MODULE_PATH = "Python"
 
+# Traducción de parámetros comunes
+SPANISH_PARAMS = {
+    "x0": "Valor inicial (x0)",
+    "x1": "Segundo valor inicial (x1)",
+    "lower_bound": "Límite inferior (a)",
+    "upper_bound": "Límite superior (b)",
+    "tolerance": "Tolerancia",
+    "max_iterations": "Máximo de iteraciones",
+    "error_type": "Tipo de error (abs/rel)",
+    "w": "Factor de relajación (w)"
+}
+
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Métodos Numéricos")
-        self.geometry("400x500")
+        self.geometry("450x600")
         self.method_var = tk.StringVar()
         self.show_main_menu()
 
@@ -38,7 +50,7 @@ class App(tk.Tk):
         tk.Label(self, text="Seleccione un Método", font=("Arial", 16)).pack(pady=20)
 
         for name in METHODS:
-            tk.Button(self, text=name, width=30, command=lambda m=name: self.load_method_form(m)).pack(pady=5)
+            tk.Button(self, text=name, width=35, command=lambda m=name: self.load_method_form(m)).pack(pady=5)
 
     def load_method_form(self, method_name):
         method_info = METHODS[method_name]
@@ -65,23 +77,22 @@ class App(tk.Tk):
 
         entries = {}
 
-        # Campo especial para la función f(x)
+        # Campo para la función f(x)
         tk.Label(self, text="f(x) =").pack()
-        f_entry = tk.Entry(self)
+        f_entry = tk.Entry(self, width=40)
         f_entry.pack(pady=5)
 
-        # Inspeccionamos parámetros (ignoramos 'f' si está primero)
+        # Inspección de los parámetros
         sig = inspect.signature(func)
         params = list(sig.parameters.keys())
-        if params and params[0] == 'f':
+        use_f = params and params[0] == 'f'
+        if use_f:
             params = params[1:]
-            use_f = True
-        else:
-            use_f = False
 
         for param in params:
-            tk.Label(self, text=param).pack()
-            entry = tk.Entry(self)
+            label = SPANISH_PARAMS.get(param, param)
+            tk.Label(self, text=label).pack()
+            entry = tk.Entry(self, width=40)
             entry.pack(pady=2)
             entries[param] = entry
 
@@ -91,12 +102,15 @@ class App(tk.Tk):
 
                 if use_f:
                     f_str = f_entry.get()
-                    f = lambda x: eval(f_str, {"np": np, "x": x})
+                    f = lambda x: eval(f_str, {"np": np, "x": x, "math": __import__('math')})
                     args.append(f)
 
                 for param in params:
-                    value = float(entries[param].get())
-                    args.append(value)
+                    val = entries[param].get().strip()
+                    if param == "error_type":
+                        args.append(val)
+                    else:
+                        args.append(float(val))
 
                 result = func(*args)
                 self.show_result(method_name, result)
@@ -113,12 +127,12 @@ class App(tk.Tk):
 
         tk.Label(self, text=f"Resultados - {method_name}", font=("Arial", 14)).pack(pady=10)
 
-        text = tk.Text(self, wrap="word", height=20, width=50)
+        text = tk.Text(self, wrap="word", height=25, width=70)
         text.pack(padx=10, pady=10)
 
         if isinstance(result, tuple) and isinstance(result[-1], list):
             try:
-                table = tabulate(result[-1], headers="keys" if isinstance(result[-1][0], dict) else "firstrow", tablefmt="grid")
+                table = tabulate(result[-1], headers="keys" if isinstance(result[-1][0], dict) else "firstrow", tablefmt="fancy_grid")
                 text.insert("1.0", table)
             except Exception:
                 text.insert("1.0", str(result))
