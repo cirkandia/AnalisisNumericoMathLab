@@ -49,14 +49,15 @@ def multiple_roots(function_str, derivative_1_str, derivative_2_str, initial_gue
         
         if error_type=="rela":
             if previous_root != 0:
-                error=absolute_error/current_root
+                error = absolute_error/current_root
             else:
                 print("Error: División por 0")
-                error= float('inf')
-                relative_error=float('inf')
+                error = float('inf')
+                relative_error = float('inf')
         
         else:
-            error=absolute_error
+            error = absolute_error
+
         results_matrix.append([iteration_count, previous_root, previous_function_value, derivative_1_value, derivative_2_value, absolute_error, relative_error])
         previous_root = current_root
         previous_function_value = current_function_value
@@ -65,15 +66,3 @@ def multiple_roots(function_str, derivative_1_str, derivative_2_str, initial_gue
             break
 
     return results_matrix
-
-function_str = input("Ingresa la función f(x): ")
-derivative_1_str = input("Ingresa la primera derivada df(x): ")
-derivative_2_str = input("Ingresa la segunda derivada d2f(x): ")
-initial_guess = float(input("Ingresa la estimación inicial x0: "))
-tolerance = float(input("Ingresa la tolerancia: "))
-max_iterations = int(input("Ingresa el número máximo de iteraciones: "))
-error_type = input("Ingresa el tipo de error (rela para relativo o abs para absoluto): ")
-
-results = multiple_roots(function_str, derivative_1_str, derivative_2_str, initial_guess, tolerance, max_iterations, error_type)
-
-print(tabulate(results, headers=["Iteración", "x", "f(x)", "df(x)", "d2f(x)", "Error absoluto", "Error relativo"], tablefmt="fancy_grid"))

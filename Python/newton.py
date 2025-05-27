@@ -44,8 +44,7 @@ Encuentra la raíz de una función f utilizando el método de Newton.
                 print("Error: División por cero en el cálculo del error relativo.")
                 return x_current, f(x_current), iteration_count, iteration_data
         else:
-            print("Error: Tipo de error inválido. Escoge 'abs' o 'rel'.")
-            return x_current, f(x_current), iteration_count, iteration_data
+            raise ValueError("Tipo de error inválido. Usa 'abs' o 'rel'.")
 
         iteration_data.append([iteration_count, x_current, f_current, df_current, error])
 
@@ -54,8 +53,6 @@ Encuentra la raíz de una función f utilizando el método de Newton.
 
         x_current = x_next
         iteration_count += 1
-
-    print("Advertencia: Se ha alcanzado el número máximo de iteraciones.")
     return x_current, f(x_current), iteration_count, iteration_data
 
 
@@ -87,3 +84,30 @@ if __name__ == '__main__':
         print(f"\nRaiz encontrada en: x = {x}, f(x) = {fx} después de {iteration_count} iteraciones.")
     else:
         print("\nNo se ha encontrado ninguna raíz dentro de la tolerancia y las iteraciones máximas dadas.")
+
+# --- Bloque de pruebas por consola ---
+if __name__ == '__main__':
+    from tabulate import tabulate
+
+    function_str = input("Ingresa la función f(x) (e.g., x**3 - 7.51*x**2 + 18.4239*x - 14.8331): ")
+    derivative_str = input("Ingresa la derivada df(x) (e.g., 3*x**2 - 15.02*x + 18.4239): ")
+    x0 = float(input("Ingresa la estimación inicial x0: "))
+    tolerance = float(input("Ingresa la tolerancia: "))
+    max_iterations = int(input("Ingresa el número máximo de iteraciones: "))
+    error_type = input("Ingresa el tipo de error ('abs' para absoluto, 'rel' para relativo): ")
+
+    if tolerance <= 0 or max_iterations <= 0:
+        print("Error: La tolerancia y el número de iteraciones deben ser positivos.")
+        exit()
+
+    try:
+        x, fx, iteration_count, iteration_data = newton_method(function_str, derivative_str, x0, tolerance, max_iterations, error_type)
+
+        if iteration_count > 0:
+            print(tabulate(iteration_data, headers=["Iteración", "x", "f(x)", "f'(x)", "Error"], tablefmt="fancy_grid"))
+            print(f"\nRaíz encontrada: x = {x}, f(x) = {fx} después de {iteration_count} iteraciones.")
+        else:
+            print("No se ha encontrado ninguna raíz dentro de las condiciones dadas.")
+
+    except Exception as e:
+        print(f"Se produjo un error: {e}")
