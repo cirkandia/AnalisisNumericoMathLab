@@ -15,7 +15,7 @@ METHODS = {
     "Raíces Múltiples": ("raices_m", "multiple_roots"),
     "Jacobi": ("jacobi", "jacobi"),
     "Gauss-Seidel": ("gauss_seidel", "gauss_seidel_method"),
-    "SOR": "sor_method",
+    "SOR": ("SOR", "sor_method"),
     "Gauss con Pivoteo": "gauss_piv",
 }
 

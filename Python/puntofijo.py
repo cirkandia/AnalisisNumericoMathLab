@@ -16,6 +16,7 @@ def fixed_point_iteration(g, x0, tolerance, max_iterations, error_type="abs"):
     Devuelve:
         tupla: Una tupla que contiene el valor final de x, el valor de g(x), el número de iteraciones y la matriz de iteraciones.
     """
+    
     x_current = x0
     iteration_count = 0
     iteration_data = []
@@ -32,21 +33,19 @@ def fixed_point_iteration(g, x0, tolerance, max_iterations, error_type="abs"):
                 print("Error: División por 0 en el cálculo del error relativo.")
                 return x_current, g(x_current), iteration_count, iteration_data
         else:
-            print("Error: Tipo de error no válido. Escoge 'abs' o 'rel'.")
-            return x_current, g(x_current), iteration_count, iteration_data
+            raise ValueError("Tipo de error no válido. Usa 'abs' o 'rel'.")
 
         iteration_data.append([iteration_count, x_current, g(x_current), error])
 
         if error < tolerance:
-            return x_next, g(x_next), iteration_count, iteration_data
+            return x_next, g(x_next), iteration_count + 1, iteration_data
 
         x_current = x_next
         iteration_count += 1
 
-    print("Alerta: Número máximo de iteraciones alcanzado.")
     return x_current, g(x_current), iteration_count, iteration_data
 
-
+# --- Bloque de pruebas por consola ---
 if __name__ == '__main__':
     function_str = input("Ingresa la función g(x) (e.g., math.exp(-x)): ")
     x0 = float(input("Ingresa la estimación inicial x0: "))
@@ -54,20 +53,17 @@ if __name__ == '__main__':
     max_iterations = int(input("Ingresa el número máximo de iteraciones: "))
     error_type = input("Ingresa el tipo de error ('abs' para absoluto, 'rel' para relativo): ")
 
-    def g(x):
-        return eval(function_str)
-
-    if tolerance <= 0:
-        print("Error: La tolerancia debe ser un número positivo.")
-        exit()
-    if max_iterations <= 0:
-        print("Error: El número máximo de iteraciones debe ser un número positivo.")
+    if tolerance <= 0 or max_iterations <= 0:
+        print("Error: La tolerancia y el número de iteraciones deben ser positivos.")
         exit()
 
-    x, gx, iteration_count, iteration_data = fixed_point_iteration(g, x0, tolerance, max_iterations, error_type)
+    try:
+        x, gx, iteration_count, iteration_data = fixed_point_iteration(function_str, x0, tolerance, max_iterations, error_type)
 
-    if iteration_count > 0:
-        print(tabulate(iteration_data, headers=["Iteration", "x_current", "g(x_current)", "Error"], tablefmt="fancy_grid"))
-        print(f"\nPunto fijo encontrado: x = {x}, g(x) = {gx} después de {iteration_count} iteraciones.")
-    else:
-        print("\nNo se ha encontrado ningún punto fijo dentro de la tolerancia y las iteraciones máximas dadas.")
+        if iteration_count > 0:
+            print(tabulate(iteration_data, headers=["Iteración", "x_actual", "g(x_actual)", "Error"], tablefmt="fancy_grid"))
+            print(f"\nPunto fijo encontrado: x = {x}, g(x) = {gx} después de {iteration_count} iteraciones.")
+        else:
+            print("No se encontró ningún punto fijo dentro de los límites dados.")
+    except Exception as e:
+        print(f"Ocurrió un error: {e}")

@@ -42,15 +42,15 @@ def gauss_seidel_method(matrix_a_str, vector_b_str, initial_guess_str, tolerance
         else:
             relative_error = float('inf')
 
-        results_matrix.append([
-            iteration_count,
-            solution_vector.copy().tolist(),
-            round(float(absolute_error), 6),
-            round(float(relative_error), 6)
-        ])
 
-        if (relative_error if error_type == "rela" else absolute_error) < tolerance:
+        if error_type == "rela":
+            error = relative_error
+        else:
+            error = absolute_error
+        results_matrix.append([iteration_count,solution_vector.copy().tolist(),round(float(absolute_error), 6),round(float(relative_error), 6)])
+        if error < tolerance:
             break
+
 
     headers = ["Iteración", "Solución", "Error absoluto", "Error relativo"]
     return (headers, results_matrix)
