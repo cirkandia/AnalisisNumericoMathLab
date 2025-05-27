@@ -50,10 +50,10 @@ def spline_lineal_con_polinomios():
     plt.show()
 
     if input("\n¿Desea comparar con otros metodos? (s/n): ").strip().lower() == 's':
-        supCp3.interpoloacion_lagrange.interpolacion_lagrange()
-        supCp3.interpolacion_newton.interpolacion_newton()
-        supCp3.spline_cubico.spline_cubico()
-        supCp3.Vandermonde.interpolacion_vandermonde()
+        supCp3.interpoloacion_lagrange.interpolacion_lagrange(x,y)
+        supCp3.interpolacion_newton.interpolacion_newton(x,y)
+        supCp3.spline_cubico.spline_cubico(x,y)
+        supCp3.Vandermonde.interpolacion_vandermonde(x,y)
 
 # Ejecutar
 spline_lineal_con_polinomios()

@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import supCp3.interpoloacion_lagrange
 import supCp3.interpolacion_newton
 import supCp3.spline_cubico
-import supCp3.spline_lineal
+import Python.supCp3.SUBspline_lineal
 #import supCp3.Vandermonde
 
 def interpolacion_vandermonde():
@@ -39,13 +39,11 @@ def interpolacion_vandermonde():
 
     # --- Precisión: comparación con numpy.polyfit (referencia) ---
     a_polyfit = np.polyfit(x, y, n)[::-1]  # polyfit devuelve coeficientes en orden descendente
-    error = np.linalg.norm(a - a_polyfit)  # Norma de la diferencia
 
     # --- Resultados ---
     print("\n🔹 RESULTADOS:")
     print(f"- Tiempo de ejecución: {tiempo_ejecucion:.6f} segundos")
     print(f"- Número de condición de la matriz: {cond_num:.2e} (valores altos indican inestabilidad)")
-    print(f"- Error respecto a numpy.polyfit: {error:.2e} (idealmente cercano a 0)")
 
     # --- Gráfica ---
     x_plot = np.linspace(min(x), max(x), 100)
@@ -64,10 +62,27 @@ def interpolacion_vandermonde():
     plt.show()
 
     if input("\n¿Desea comparar con otros métodos? (s/n): ").strip().lower() == 's':
-        supCp3.interpoloacion_lagrange.interpolacion_lagrange()
-        supCp3.interpolacion_newton.interpolacion_newton()
-        supCp3.spline_cubico.spline_cubico()
-        supCp3.spline_lineal.spline_lineal_con_polinomios()
+        ILG=[supCp3.interpoloacion_lagrange.interpolacion_lagrange(x,y)]
+        INT=[supCp3.interpolacion_newton.interpolacion_newton(x,y)]
+        SPCC=[supCp3.spline_cubico.spline_cubico(x,y)]
+        SPL=[supCp3.SUBspline_lineal.SUBspline_lineal(x,y)]
+
+        plt.figure(figsize=(10, 6))
+        plt.plot(x, y, 'ro', label='Puntos dados')
+        plt.plot(x_plot, y_vander, 'b-', label='Vandermonde')
+        plt.plot(SPL[0], SPL[1], 'g--', label='Pline lineal')
+        plt.plot(ILG[0],ILG[1], 'm--', label='Lagrange')
+        plt.plot(INT[0], INT[1], 'c--', label='Newton')
+        plt.plot(SPCC[0], SPCC[1], 'y--', label='Spline Cubico')
+        plt.title("Comparacion General")
+        plt.xlabel("x")
+        plt.ylabel("y")
+        plt.legend()
+        plt.grid()
+        plt.show()
+        print("comparacion general")
+        print("tiempo de ejecucion", SPL[2])
+        #print("numero de condicion", SPL[3])
 
 # Ejecutar
 interpolacion_vandermonde()

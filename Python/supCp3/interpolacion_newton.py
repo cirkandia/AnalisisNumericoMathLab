@@ -2,21 +2,9 @@ import numpy as np
 import time
 import matplotlib.pyplot as plt
 
-def interpolacion_newton():
-    print("=== INTERPOLACIÓN DE NEWTON CON DIFERENCIAS DIVIDIDAS ===")
-    print("Incluye el polinomio resultante, tiempo de ejecución y gráfica.\n")
-    
-    # Entrada de datos
-    n = int(input("Ingrese el número de puntos (n+1): ")) - 1
-    x = []
-    y = []
-    print("\nIngrese los puntos (x_i, y_i):")
-    for i in range(n + 1):
-        x.append(float(input(f"x_{i}: ")))
-        y.append(float(input(f"y_{i}: ")))
-    x = np.array(x)
-    y = np.array(y)
-
+def interpolacion_newton(xin, yin):
+    x = xin
+    y = yin
     # --- Construcción del polinomio de Newton ---
     start_time = time.time()
 
@@ -50,23 +38,12 @@ def interpolacion_newton():
         return result
 
     # --- Resultados ---
-    print("\n🔹 POLINOMIO DE NEWTON:")
-    print(polinomio)
-    print(f"\n🔹 TIEMPO DE EJECUCIÓN: {tiempo_ejecucion:.6f} segundos")
 
     # --- Gráfica ---
     x_plot = np.linspace(min(x), max(x), 100)
     y_newton = [P_newton(xi) for xi in x_plot]
 
-    plt.figure(figsize=(10, 6))
-    plt.plot(x, y, 'ro', label='Puntos dados')
-    plt.plot(x_plot, y_newton, 'b-', label='Polinomio de Newton')
-    plt.title("Interpolación de Newton", fontsize=14)
-    plt.xlabel("x", fontsize=12)
-    plt.ylabel("y", fontsize=12)
-    plt.legend()
-    plt.grid()
-    plt.show()
+    return [x_plot, y_newton, polinomio, tiempo_ejecucion]
 
 # Ejecutar
-interpolacion_newton()
+#interpolacion_newton()

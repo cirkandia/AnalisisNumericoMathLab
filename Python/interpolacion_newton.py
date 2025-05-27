@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import supCp3.interpoloacion_lagrange
 #import supCp3.interpolacion_newton
 import supCp3.spline_cubico
-import supCp3.spline_lineal
+import Python.supCp3.SUBspline_lineal
 import supCp3.Vandermonde
 
 def interpolacion_newton():
@@ -74,10 +74,10 @@ def interpolacion_newton():
     plt.show()
 
     if input("\n¿Desea comparar con otros metodos? (s/n): ").strip().lower() == 's':
-        supCp3.interpoloacion_lagrange.interpolacion_lagrange()
-        supCp3.spline_cubico.spline_cubico()
-        supCp3.spline_lineal.spline_lineal_con_polinomios()
-        supCp3.Vandermonde.interpolacion_vandermonde()
+        supCp3.interpoloacion_lagrange.interpolacion_lagrange(x,y)
+        supCp3.spline_cubico.spline_cubico(x,y)
+        supCp3.SUBspline_lineal.spline_lineal_con_polinomios(x,y)
+        supCp3.Vandermonde.interpolacion_vandermonde(x,y)
 
 # Ejecutar
 interpolacion_newton()
