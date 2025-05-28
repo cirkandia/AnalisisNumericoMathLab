@@ -305,53 +305,72 @@ class App(tk.Tk):
         input_frame.grid_columnconfigure(1, weight=1)
 
         def execute():
-            try:
-                args = []
+    try:
+        args = []
 
-                if use_f:
-                    f_str = f_entry.get()
-                    if not f_str.strip():
-                        messagebox.showerror("Error", "Debe ingresar una función f(x)")
-                        return
-                    
-                    # Función lambda más robusta
-                    f = lambda x: eval(f_str, {
-                        "np": np, "x": x, "math": __import__('math'),
-                        "sin": np.sin, "cos": np.cos, "tan": np.tan,
-                        "exp": np.exp, "log": np.log, "sqrt": np.sqrt
-                    })
-                    args.append(f)
+        if use_f:
+            f_str = f_entry.get()
+            if not f_str.strip():
+                messagebox.showerror("Error", "Debe ingresar una función f(x)")
+                return
+            
+            f = lambda x: eval(f_str, {
+                "np": np, "x": x, "math": __import__('math'),
+                "sin": np.sin, "cos": np.cos, "tan": np.tan,
+                "exp": np.exp, "log": np.log, "sqrt": np.sqrt
+            })
+            args.append(f)
 
-                x_vals = None
-                y_vals = None
+        x_vals = None
+        y_vals = None
 
-                for param in params:
-                    val = entries[param].get().strip()
-                    if not val:
-                        messagebox.showerror("Error", f"Debe ingresar un valor para {SPANISH_PARAMS.get(param, param)}")
-                        return
+        for param in params:
+            val = entries[param].get().strip()
+            if not val:
+                messagebox.showerror("Error", f"Debe ingresar un valor para {SPANISH_PARAMS.get(param, param)}")
+                return
 
-                    # Procesamiento especial para puntos x e y
-                    if param.lower() in ["x_points", "puntos x", "valoresx"]:
-                        x_vals = [float(x.strip()) for x in val.split(',') if x.strip() != ""]
-                    elif param.lower() in ["y_points", "valores y", "valoresy"]:
-                        y_vals = [float(y.strip()) for y in val.split(',') if y.strip() != ""]
-                    elif param == "error_type":
-                        args.append(val)
-                    elif param == "A":
-                        rows = val.split(';')
-                        matrix = []
-                        for row in rows:
-                            matrix.append([float(x.strip()) for x in row.split(',')])
-                        args.append(np.array(matrix))
-                    elif param == "b":
-                        vector = [float(x.strip()) for x in val.split(',')]
-                        args.append(np.array(vector))
-                    else:
-                        try:
-                            args.append(float(val))
-                        except ValueError:
-                            args.append(val)
+            # Procesamiento especial para parámetros que deben ser enteros
+            if param in ["max_iterations", "n_iter", "iteraciones"]:
+                try:
+                    args.append(int(val))
+                except ValueError:
+                    messagebox.showerror("Error", f"{SPANISH_PARAMS.get(param, param)} debe ser un número entero")
+                    return
+            # Procesamiento para puntos x e y
+            elif param.lower() in ["x_points", "puntos x", "valoresx"]:
+                x_vals = [float(x.strip()) for x in val.split(',') if x.strip() != ""]
+            elif param.lower() in ["y_points", "valores y", "valoresy"]:
+                y_vals = [float(y.strip()) for y in val.split(',') if y.strip() != ""]
+            elif param == "error_type":
+                args.append(val)
+            elif param == "A":
+                rows = val.split(';')
+                matrix = []
+                for row in rows:
+                    matrix.append([float(x.strip()) for x in row.split(',')])
+                args.append(np.array(matrix))
+            elif param == "b":
+                vector = [float(x.strip()) for x in val.split(',')]
+                args.append(np.array(vector))
+            else:
+                try:
+                    # Para otros parámetros numéricos, usar float
+                    args.append(float(val))
+                except ValueError:
+                    args.append(val)
+
+        # Validación de listas x e y
+        if x_vals is not None and y_vals is not None:
+            self.ultimo_x = x_vals
+            self.ultimo_y = y_vals
+            args = [x_vals, y_vals] + args
+
+        result = func(*args)
+        self.show_result(method_name, result)
+
+    except Exception as e:
+        messagebox.showerror("Error", f"Error en la ejecución: {str(e)}")
 
                 # Validación de listas x e y
                 if x_vals is not None and y_vals is not None:
