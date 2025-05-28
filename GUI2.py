@@ -5,6 +5,7 @@ from tabulate import tabulate
 import importlib
 import inspect
 import pandas as pd
+from Python.Vandermonde import comparar_metodos
 
 # Diccionario de métodos con información completa
 METHODS = {
@@ -65,7 +66,7 @@ METHODS = {
         "Vandermonde": {
             "module": ("Vandermonde", "interpolacion_vandermonde"),
             "description": "Interpolación polinomial usando matriz de Vandermonde.",
-            "required_inputs": ["Puntos x", "Valores y"],
+            "required_inputs": ["ValoresX", "ValoresY"],
             "example": "X: 1,2,3 \n Y: 2,4,5 \n dando (1,2), (2,4), (3,5) como puntos de interpolación"
         },
         "Interpolación Newton": {
@@ -321,32 +322,42 @@ class App(tk.Tk):
                     })
                     args.append(f)
 
+                x_vals = None
+                y_vals = None
+
                 for param in params:
                     val = entries[param].get().strip()
                     if not val:
                         messagebox.showerror("Error", f"Debe ingresar un valor para {SPANISH_PARAMS.get(param, param)}")
                         return
-                    
-                    if param == "error_type":
+
+                    # Procesamiento especial para puntos x e y
+                    if param.lower() in ["x_points", "puntos x", "valoresx"]:
+                        x_vals = [float(x.strip()) for x in val.split(',') if x.strip() != ""]
+                    elif param.lower() in ["y_points", "valores y", "valoresy"]:
+                        y_vals = [float(y.strip()) for y in val.split(',') if y.strip() != ""]
+                    elif param == "error_type":
                         args.append(val)
-                    elif param in ["A", "b", "x_points", "y_points"]:
-                        # Manejo de matrices y vectores
-                        if param == "A":
-                            # Matriz: filas separadas por ; y elementos por ,
-                            rows = val.split(';')
-                            matrix = []
-                            for row in rows:
-                                matrix.append([float(x.strip()) for x in row.split(',')])
-                            args.append(np.array(matrix))
-                        else:
-                            # Vector: elementos separados por ,
-                            vector = [float(x.strip()) for x in val.split(',')]
-                            args.append(np.array(vector))
+                    elif param == "A":
+                        rows = val.split(';')
+                        matrix = []
+                        for row in rows:
+                            matrix.append([float(x.strip()) for x in row.split(',')])
+                        args.append(np.array(matrix))
+                    elif param == "b":
+                        vector = [float(x.strip()) for x in val.split(',')]
+                        args.append(np.array(vector))
                     else:
                         try:
                             args.append(float(val))
                         except ValueError:
                             args.append(val)
+
+                # Validación de listas x e y
+                if x_vals is not None and y_vals is not None:
+                    self.ultimo_x = x_vals
+                    self.ultimo_y = y_vals
+                    args = [x_vals, y_vals] + args  # Asegura que x e y sean los primeros argumentos
 
                 result = func(*args)
                 self.show_result(method_name, result)
@@ -393,6 +404,12 @@ class App(tk.Tk):
             text_widget.pack(fill='both', expand=True, padx=10, pady=10)
             text_widget.insert('1.0', str(result))
             text_widget.config(state='disabled')
+
+        # NO Solo para Vandermonde, pregunta si desea comparar
+        if method_name == "Vandermonde" or "spline_lineal" or "spline_cubico" or "interpolacion_lagrange" or "interpolacion_newton":
+            if messagebox.askyesno("Comparar", "¿Desea comparar con otros métodos de interpolación?"):
+                # Recupera los últimos valores usados (deberás guardarlos en self)
+                comparar_metodos(self.ultimo_x, self.ultimo_y)
 
         # Botones
         button_frame = tk.Frame(main_frame, bg='#f0f0f0')
