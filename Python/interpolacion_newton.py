@@ -8,11 +8,23 @@ from Python.supCp3 import SUBspline_lineal
 from Python.supCp3 import Subvandermonde
 
 def interpolacion_newton(ValoresX=None, ValoresY=None):
-    print("=== INTERPOLACIÓN DE NEWTON CON DIFERENCIAS DIVIDIDAS ===")
-    x = ValoresX
-    y = ValoresY
-    x = np.array(x)
-    y = np.array(y)
+    # Entrada de datos si no se pasan argumentos
+    if ValoresX is None or ValoresY is None:
+        x = input("Ingrese los valores de x separados por coma: ")
+        y = input("Ingrese los valores de y separados por coma: ")
+        x = np.array([float(val) for val in x.split(",")])
+        y = np.array([float(val) for val in y.split(",")])
+    else:
+        x = np.array(ValoresX)
+        y = np.array(ValoresY)
+
+    # Validación
+    if x.ndim == 0 or len(x) < 2:
+        raise ValueError("Debe ingresar al menos dos puntos para interpolar.")
+    if not np.all(np.diff(x) > 0):
+        raise ValueError("Los valores de x deben estar en orden creciente")
+    if len(x) != len(y):
+        raise ValueError("Las listas de x e y deben tener la misma longitud.")
 
     # --- Construcción del polinomio de Newton ---
     start_time = time.time()
@@ -34,7 +46,7 @@ def interpolacion_newton(ValoresX=None, ValoresY=None):
     termino = ""
     for i in range(1, n_points):
         termino += f"(x - {x[i-1]:.4f})"
-        polinomio += f" + {a[i]:.4f}" + termino
+        polinomio += f" + {a[i]:.4f}{termino}"
 
     end_time = time.time()
     tiempo_ejecucion = end_time - start_time
@@ -45,11 +57,6 @@ def interpolacion_newton(ValoresX=None, ValoresY=None):
         for i in range(len(a) - 2, -1, -1):
             result = result * (x_eval - x[i]) + a[i]
         return result
-
-    # --- Resultados ---
-    print("\n🔹 POLINOMIO DE NEWTON:")
-    print(polinomio)
-    print(f"\n🔹 TIEMPO DE EJECUCIÓN: {tiempo_ejecucion:.6f} segundos")
 
     # --- Gráfica ---
     x_plot = np.linspace(min(x), max(x), 100)
@@ -63,28 +70,39 @@ def interpolacion_newton(ValoresX=None, ValoresY=None):
     plt.ylabel("y", fontsize=12)
     plt.legend()
     plt.grid()
-    plt.show()
+    plt.show(block=False)
 
-    if input("\n¿Desea comparar con otros metodos? (s/n): ").strip().lower() == 's':
-        ILG = SUBinterpol_lagrange.interpol_lagrange(x,y)
-        SPCC = SUBspln_cubico.SUBSUBspline_cubico(x,y)
-        SPL = SUBspline_lineal.SUBSUBspline_lineal(x,y)
-        VAN = Subvandermonde.interpol_vandermonde(x,y)
-        
+    resultado = (
+        f"Puntos ingresados: {list(zip(ValoresX,ValoresY))}\n"
+        f"Polinomio de Newton:\n{polinomio}\n\n"
+        f"Tiempo de ejecución: {tiempo_ejecucion:.6f} segundos"
+    )
+    return resultado
+
+    # Comparación con otros métodos (opcional)
+    comparar = input("\n¿Desea comparar con otros métodos? (s/n): ").strip().lower()
+    if comparar == 's':
+        ILG = SUBinterpol_lagrange.interpol_lagrange(x, y)
+        SPCC = SUBspln_cubico.SUBSUBspline_cubico(x, y)
+        SPL = SUBspline_lineal.SUBSUBspline_lineal(x, y)
+        VAN = Subvandermonde.interpol_vandermonde(x, y)
+
         plt.figure(figsize=(10, 6))
         plt.plot(x, y, 'ro', label='Puntos dados')
         plt.plot(x_plot, y_newton, 'b-', label='Newton')
-        plt.plot(SPL[0], SPL[1], 'g--', label='Pline lineal')
-        plt.plot(ILG[0],ILG[1], 'm--', label='Lagrange')
+        plt.plot(SPL[0], SPL[1], 'g--', label='Spline lineal')
+        plt.plot(ILG[0], ILG[1], 'm--', label='Lagrange')
         plt.plot(VAN[0], VAN[1], 'k-', label='Vandermonde')
-        plt.plot(SPCC[0], SPCC[1], 'y--', label='Spline Cubico')
-        plt.title("Comparacion General")
+        plt.plot(SPCC[0], SPCC[1], 'y--', label='Spline Cúbico')
+        plt.title("Comparación General")
         plt.xlabel("x")
         plt.ylabel("y")
         plt.legend()
         plt.grid()
-        plt.show()
-        print("comparacion general")
+        plt.show(block=False)
+        resultado += "\nComparación general mostrada en la gráfica."
 
-# Ejecutar
-interpolacion_newton()
+
+# Ejecutar solo si es script principal
+if __name__ == "__main__":
+    print(interpolacion_newton())
