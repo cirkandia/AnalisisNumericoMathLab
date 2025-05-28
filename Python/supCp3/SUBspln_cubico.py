@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import CubicSpline
 
-def spline_cubico(xin, yin):
+def SUBSUBspline_cubico(xin, yin):
     x= xin
     y= yin
 

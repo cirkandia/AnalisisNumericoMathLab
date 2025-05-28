@@ -1,16 +1,16 @@
 import numpy as np
 import time
 import matplotlib.pyplot as plt
-import supCp3.interpoloacion_lagrange
-import supCp3.interpolacion_newton
-import supCp3.spline_cubico
+import supCp3.SUBinterpol_lagrange
+import supCp3.SUBinterpol_newton
+import supCp3.SUBspln_cubico
 import supCp3.SUBspline_lineal
-#import supCp3.Vandermonde
+#import supCp3.Subvandermonde
 
 def interpolacion_vandermonde(ValoresX=None, ValoresY=None):  #  Parámetros opcionales añadidos
     print(ValoresX, ValoresY)
-    print("=== MÉTODO DE VANDERMONDE ===")
-    print("Incluye análisis de tiempo, precisión y número de condición.\n")
+    #print("=== MÉTODO DE VANDERMONDE ===")
+    #print("Incluye análisis de tiempo, precisión y número de condición.\n")
     
     # Entrada de datos
     if ValoresX is None or ValoresY is None:  #  Lógica para entrada manual/automática
@@ -79,10 +79,10 @@ def interpolacion_vandermonde(ValoresX=None, ValoresY=None):  #  Parámetros opc
     plt.show()
 
     if input("\n¿Desea comparar con otros métodos? (s/n): ").strip().lower() == 's':
-        ILG=supCp3.interpoloacion_lagrange.interpolacion_lagrange(x,y)
-        INT=supCp3.interpolacion_newton.interpolacion_newton(x,y)
-        SPCC=supCp3.spline_cubico.spline_cubico(x,y)
-        SPL=supCp3.SUBspline_lineal.spline_lineal(x,y)
+        ILG=supCp3.SUBinterpol_lagrange.interpol_lagrange(x,y)
+        INT=supCp3.SUBinterpol_newton.interpol_newton(x,y)
+        SPCC=supCp3.SUBspln_cubico.SUBSUBspline_cubico(x,y)
+        SPL=supCp3.SUBspline_lineal.SUBSUBspline_lineal(x,y)
 
         plt.figure(figsize=(10, 6))
         plt.plot(x, y, 'ro', label='Puntos dados')

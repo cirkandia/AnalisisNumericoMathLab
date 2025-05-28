@@ -1,24 +1,16 @@
 import numpy as np
 import time
 import matplotlib.pyplot as plt
-import supCp3.interpoloacion_lagrange
-#import supCp3.interpolacion_newton
-import supCp3.spline_cubico
+import supCp3.SUBinterpol_lagrange
+#import supCp3.SUBinterpol_newton
+import supCp3.SUBspln_cubico
 import supCp3.SUBspline_lineal
-import supCp3.Vandermonde
+import supCp3.Subvandermonde
 
-def interpolacion_newton():
+def interpolacion_newton(ValoresX=None, ValoresY=None):
     print("=== INTERPOLACIÓN DE NEWTON CON DIFERENCIAS DIVIDIDAS ===")
-    print("Incluye el polinomio resultante, tiempo de ejecución y gráfica.\n")
-    
-    # Entrada de datos
-    n = int(input("Ingrese el número de puntos (n+1): ")) - 1
-    x = []
-    y = []
-    print("\nIngrese los puntos (x_i, y_i):")
-    for i in range(n + 1):
-        x.append(float(input(f"x_{i}: ")))
-        y.append(float(input(f"y_{i}: ")))
+    x = ValoresX
+    y = ValoresY
     x = np.array(x)
     y = np.array(y)
 
@@ -74,10 +66,10 @@ def interpolacion_newton():
     plt.show()
 
     if input("\n¿Desea comparar con otros metodos? (s/n): ").strip().lower() == 's':
-        ILG = supCp3.interpoloacion_lagrange.interpolacion_lagrange(x,y)
-        SPCC = supCp3.spline_cubico.spline_cubico(x,y)
-        SPL = supCp3.SUBspline_lineal.spline_lineal(x,y)
-        VAN = supCp3.Vandermonde.interpolacion_vandermonde(x,y)
+        ILG = supCp3.SUBinterpol_lagrange.interpol_lagrange(x,y)
+        SPCC = supCp3.SUBspln_cubico.SUBSUBspline_cubico(x,y)
+        SPL = supCp3.SUBspline_lineal.SUBSUBspline_lineal(x,y)
+        VAN = supCp3.Subvandermonde.interpol_vandermonde(x,y)
         
         plt.figure(figsize=(10, 6))
         plt.plot(x, y, 'ro', label='Puntos dados')

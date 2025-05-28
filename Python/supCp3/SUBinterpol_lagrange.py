@@ -2,7 +2,7 @@ import numpy as np
 import time
 import matplotlib.pyplot as plt
 
-def interpolacion_lagrange(inx,iny):
+def interpol_lagrange(inx,iny):
     x=inx
     y=iny
 
@@ -31,7 +31,7 @@ def interpolacion_lagrange(inx,iny):
             polinomio += term
 
     # Opcional: Mostrar polinomios base L_i(x)
-    print("\n🔹 POLINOMIOS BASE DE LAGRANGE:")
+    #print("\n🔹 POLINOMIOS BASE DE LAGRANGE:")
     grupoP = []
     for i in range(len(x)):
         L_i = "L_" + str(i) + "(x) = "

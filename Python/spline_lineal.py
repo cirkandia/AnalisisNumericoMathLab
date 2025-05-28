@@ -1,24 +1,17 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
-import supCp3.interpoloacion_lagrange
-import supCp3.interpolacion_newton
-import supCp3.spline_cubico
-#import supCp3.spline_lineal
-import supCp3.Vandermonde
+import supCp3.SUBinterpol_lagrange
+import supCp3.SUBinterpol_newton
+import supCp3.SUBspln_cubico
+#import supCp3.SUBspline_lineal
+import supCp3.Subvandermonde
 
-def spline_lineal_con_polinomios():
-    print("=== MÉTODO DE SPLINE LINEAL ===")
-    print("Interpolación por segmentos de recta entre puntos dados.\n")
+def spline_lineal_con_polinomios(ValoresX=None, ValoresY=None):
     
     # Entrada de datos
-    n = int(input("Ingrese el número de puntos (n+1): ")) - 1
-    x = []
-    y = []
-    print("\nIngrese los puntos (x_i, y_i):")
-    for i in range(n + 1):
-        x.append(float(input(f"x_{i}: ")))
-        y.append(float(input(f"y_{i}: ")))
+    x = ValoresX
+    y = ValoresY
     x = np.array(x)
     y = np.array(y)
 
@@ -26,14 +19,14 @@ def spline_lineal_con_polinomios():
     spline = interp1d(x, y, kind='linear')
 
     # --- Mostrar polinomios por tramo ---
-    print("\n🔹 POLINOMIOS POR TRAMO:")
+    #print("\n🔹 POLINOMIOS POR TRAMO:")
     for i in range(len(x) - 1):
         x0, x1 = x[i], x[i + 1]
         y0, y1 = y[i], y[i + 1]
         pendiente = (y1 - y0) / (x1 - x0)
         polinomio = f"S_{i}(x) = {y0:.4f} + {pendiente:.4f}(x - {x0:.4f})"
         dominio = f"para x ∈ [{x0:.4f}, {x1:.4f}]"
-        print(f"- {polinomio} \t{dominio}")
+        #print(f"- {polinomio} \t{dominio}")
 
     # --- Evaluación y gráfica ---
     x_plot = np.linspace(min(x), max(x), 100)
@@ -50,10 +43,10 @@ def spline_lineal_con_polinomios():
     plt.show()
 
     if input("\n¿Desea comparar con otros metodos? (s/n): ").strip().lower() == 's':
-        ILG = supCp3.interpoloacion_lagrange.interpolacion_lagrange(x,y)
-        INT = supCp3.interpolacion_newton.interpolacion_newton(x,y)
-        SPCC =  supCp3.spline_cubico.spline_cubico(x,y)
-        VAN =supCp3.Vandermonde.interpolacion_vandermonde(x,y)
+        ILG = supCp3.SUBinterpol_lagrange.interpol_lagrange(x,y)
+        INT = supCp3.SUBinterpol_newton.interpol_newton(x,y)
+        SPCC =  supCp3.SUBspln_cubico.CubicSpline(x,y)
+        VAN =supCp3.Subvandermonde.interpol_vandermonde(x,y)
 
         plt.figure(figsize=(10, 6))
         plt.plot(x, y, 'ro', label='Puntos dados')

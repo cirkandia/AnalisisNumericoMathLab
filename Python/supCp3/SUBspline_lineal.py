@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
 
-def spline_lineal(inx,iny):
+def SUBSUBspline_lineal(inx,iny):
     x=inx
     y=iny
 

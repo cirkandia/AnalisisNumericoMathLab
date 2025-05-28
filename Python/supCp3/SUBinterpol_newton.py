@@ -2,7 +2,7 @@ import numpy as np
 import time
 import matplotlib.pyplot as plt
 
-def interpolacion_newton(xin, yin):
+def interpol_newton(xin, yin):
     x = xin
     y = yin
     # --- Construcción del polinomio de Newton ---

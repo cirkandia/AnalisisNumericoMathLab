@@ -2,7 +2,7 @@ import numpy as np
 import time
 import matplotlib.pyplot as plt
 
-def interpolacion_vandermonde(inx,iny):
+def interpol_vandermonde(inx,iny):
     x = inx
     y = iny
 
