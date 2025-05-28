@@ -7,10 +7,14 @@ import re
 def conversion(expr):
     expr = re.sub(r'(?<!\w)e', 'E', expr)
     expr = re.sub(r'\bln\b', 'log', expr)
+    expr = re.sub(r'\bsin\b', 'sin', expr)
+    expr = re.sub(r'\bcos\b', 'cos', expr)
     sympy_expr = sp.sympify(expr)
     converted_expr = str(sympy_expr).replace('E', 'math.exp(1)')
     converted_expr = converted_expr.replace('exp(', 'math.exp(')
     converted_expr = converted_expr.replace('log(', 'math.log(')
+    converted_expr = converted_expr.replace('sin(', 'math.sin(')
+    converted_expr = converted_expr.replace('cos(', 'math.cos(')
 
     return converted_expr
 
