@@ -1,22 +1,28 @@
 from tabulate import tabulate
 import numpy as np
 import math
+import sympy as sp
 
-def newton_method(f, df, x0, tolerance, max_iterations, error_type="abs"):
+def newton_method(f_str, x0, tolerance, max_iterations, error_type="abs"):
     """
-Encuentra la raíz de una función f utilizando el método de Newton.
+    Encuentra la raíz de una función f utilizando el método de Newton.
 
     Argumentos:
-        f (función): La función de la que buscar la raíz.
-        df (función): La derivada de la función f.
-        x0 (flotante): La estimación inicial.
-        tolerance (float): La tolerancia para la raíz.
-        max_iteraciones (int): El número máximo de iteraciones.
-        tipo_error (str): El tipo de error a utilizar («abs» para absoluto, «rel» para relativo).
+        f_str (str): La función como string, por ejemplo "x**3 - x - 2".
+        x0 (float): Estimación inicial.
+        tolerance (float): Tolerancia para la raíz.
+        max_iterations (int): Número máximo de iteraciones.
+        error_type (str): 'abs' para error absoluto, 'rel' para relativo.
 
     Devuelve:
-        tupla: Una tupla que contiene el valor final de x, el valor de f(x), el número de iteraciones y la matriz de iteraciones.
+        tupla: (raíz, f(raíz), iteraciones, tabla de iteraciones)
     """
+    x = sp.symbols('x')
+    f_sym = sp.sympify(f_str)
+    df_sym = sp.diff(f_sym, x)
+    f = sp.lambdify(x, f_sym, modules=['numpy', 'math'])
+    df = sp.lambdify(x, df_sym, modules=['numpy', 'math'])
+
     x_current = x0
     iteration_count = 0
     iteration_data = []
@@ -49,12 +55,11 @@ Encuentra la raíz de una función f utilizando el método de Newton.
         iteration_data.append([iteration_count, x_current, f_current, df_current, error])
 
         if error < tolerance:
-            return x_next, f(x_next), iteration_count, iteration_data
+            return x_next, f(x_next), iteration_count + 1, iteration_data
 
         x_current = x_next
         iteration_count += 1
     return x_current, f(x_current), iteration_count, iteration_data
-
 
 if __name__ == '__main__':
     function_str = input("Ingresa la función f(x) (e.g., x**3 - 7.51*x**2 + 18.4239*x - 14.8331): ")
@@ -90,7 +95,6 @@ if __name__ == '__main__':
     from tabulate import tabulate
 
     function_str = input("Ingresa la función f(x) (e.g., x**3 - 7.51*x**2 + 18.4239*x - 14.8331): ")
-    derivative_str = input("Ingresa la derivada df(x) (e.g., 3*x**2 - 15.02*x + 18.4239): ")
     x0 = float(input("Ingresa la estimación inicial x0: "))
     tolerance = float(input("Ingresa la tolerancia: "))
     max_iterations = int(input("Ingresa el número máximo de iteraciones: "))
@@ -101,7 +105,7 @@ if __name__ == '__main__':
         exit()
 
     try:
-        x, fx, iteration_count, iteration_data = newton_method(function_str, derivative_str, x0, tolerance, max_iterations, error_type)
+        x, fx, iteration_count, iteration_data = newton_method(function_str, x0, tolerance, max_iterations, error_type)
 
         if iteration_count > 0:
             print(tabulate(iteration_data, headers=["Iteración", "x", "f(x)", "f'(x)", "Error"], tablefmt="fancy_grid"))
