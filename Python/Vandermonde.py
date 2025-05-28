@@ -1,11 +1,12 @@
 import numpy as np
 import time
 import matplotlib.pyplot as plt
-import supCp3.SUBinterpol_lagrange
-import supCp3.SUBinterpol_newton
-import supCp3.SUBspln_cubico
-import supCp3.SUBspline_lineal
-#import supCp3.Subvandermonde
+from Python.supCp3 import SUBinterpol_lagrange
+from Python.supCp3 import SUBinterpol_newton
+from Python.supCp3 import SUBspln_cubico
+from Python.supCp3 import SUBspline_lineal
+#from Python.supCp3 import Subvandermonde
+
 
 def interpolacion_vandermonde(ValoresX=None, ValoresY=None):  #  Parámetros opcionales añadidos
     print(ValoresX, ValoresY)
@@ -33,6 +34,8 @@ def interpolacion_vandermonde(ValoresX=None, ValoresY=None):  #  Parámetros opc
         #  Validación para arrays de entrada
         x = np.array(ValoresX)
         y = np.array(ValoresY)
+        if x.ndim == 0 or len(x) < 2:
+            raise ValueError("Debe ingresar al menos dos puntos para interpolar.")
         if not np.all(np.diff(x) > 0):
             raise ValueError("Los valores de x deben estar en orden creciente")
 
@@ -79,10 +82,10 @@ def interpolacion_vandermonde(ValoresX=None, ValoresY=None):  #  Parámetros opc
     plt.show()
 
     if input("\n¿Desea comparar con otros métodos? (s/n): ").strip().lower() == 's':
-        ILG=supCp3.SUBinterpol_lagrange.interpol_lagrange(x,y)
-        INT=supCp3.SUBinterpol_newton.interpol_newton(x,y)
-        SPCC=supCp3.SUBspln_cubico.SUBSUBspline_cubico(x,y)
-        SPL=supCp3.SUBspline_lineal.SUBSUBspline_lineal(x,y)
+        ILG=SUBinterpol_lagrange.interpol_lagrange(x,y)
+        INT=SUBinterpol_newton.interpol_newton(x,y)
+        SPCC=SUBspln_cubico.SUBSUBspline_cubico(x,y)
+        SPL=SUBspline_lineal.SUBSUBspline_lineal(x,y)
 
         plt.figure(figsize=(10, 6))
         plt.plot(x, y, 'ro', label='Puntos dados')
@@ -102,4 +105,4 @@ def interpolacion_vandermonde(ValoresX=None, ValoresY=None):  #  Parámetros opc
         #print("numero de condicion", SPL[3])
 
 # Ejecutar
-interpolacion_vandermonde()
+#interpolacion_vandermonde()

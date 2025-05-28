@@ -1,11 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
-import supCp3.SUBinterpol_lagrange
-import supCp3.SUBinterpol_newton
-import supCp3.SUBspln_cubico
-#import supCp3.SUBspline_lineal
-import supCp3.Subvandermonde
+from Python.supCp3 import SUBinterpol_lagrange
+from Python.supCp3 import SUBinterpol_newton
+from Python.supCp3 import SUBspln_cubico
+#from Python.supCp3 import SUBspline_lineal
+from Python.supCp3 import Subvandermonde
 
 def spline_lineal_con_polinomios(ValoresX=None, ValoresY=None):
     
@@ -43,10 +43,10 @@ def spline_lineal_con_polinomios(ValoresX=None, ValoresY=None):
     plt.show()
 
     if input("\n¿Desea comparar con otros metodos? (s/n): ").strip().lower() == 's':
-        ILG = supCp3.SUBinterpol_lagrange.interpol_lagrange(x,y)
-        INT = supCp3.SUBinterpol_newton.interpol_newton(x,y)
-        SPCC =  supCp3.SUBspln_cubico.CubicSpline(x,y)
-        VAN =supCp3.Subvandermonde.interpol_vandermonde(x,y)
+        ILG = SUBinterpol_lagrange.interpol_lagrange(x,y)
+        INT = SUBinterpol_newton.interpol_newton(x,y)
+        SPCC =  SUBspln_cubico.CubicSpline(x,y)
+        VAN = Subvandermonde.interpol_vandermonde(x,y)
 
         plt.figure(figsize=(10, 6))
         plt.plot(x, y, 'ro', label='Puntos dados')

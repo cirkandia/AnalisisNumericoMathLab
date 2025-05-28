@@ -63,34 +63,34 @@ METHODS = {
             "example": "Sistema con w = 1.2 para acelerar convergencia"
         },
         "Vandermonde": {
-            "module": ("supCp3.Vandermonde", "interpolacion_vandermonde"),
+            "module": ("Vandermonde", "interpolacion_vandermonde"),
             "description": "Interpolación polinomial usando matriz de Vandermonde.",
             "required_inputs": ["Puntos x", "Valores y"],
-            "example": "Puntos: (0,1), (1,4), (2,9)"
+            "example": "X: 1,2,3 \n Y: 2,4,5 \n dando (1,2), (2,4), (3,5) como puntos de interpolación"
         },
         "Interpolación Newton": {
-            "module": ("Python.interpolacion_newton", "interpolacion_newton"),
+            "module": ("interpolacion_newton", "interpolacion_newton"),
             "description": "Interpolación usando diferencias divididas de Newton.",
             "required_inputs": ["Puntos x", "Valores y", "Punto a evaluar"],
-            "example": "Datos tabulados para aproximar función desconocida"
+            "example": "X: 1,2,3 \n Y: 2,4,5 \n dando (1,2), (2,4), (3,5) como puntos de interpolación"
         },
         "Spline Lineal": {
-            "module": ("supCp3.SUBspline_lineal", "spline_lineal_con_polinomios"),
+            "module": ("spline_lineal", "spline_lineal_con_polinomios"),
             "description": "Interpolación lineal por tramos.",
             "required_inputs": ["Puntos x", "Valores y"],
-            "example": "Puntos: (0,1), (1,2), (2,3)"
+            "example": "X: 1,2,3 \n Y: 2,4,5 \n dando (1,2), (2,4), (3,5) como puntos de interpolación"
         },
         "Spline Cúbico": {
-            "module": ("supCp3.spline_cubico", "spline_cubico"),
+            "module": ("spline_cubico", "spline_cubico"),
             "description": "Interpolación cúbica por tramos.",
             "required_inputs": ["Puntos x", "Valores y"],
-            "example": "Puntos: (0,1), (1,8), (2,27)"
+            "example": "X: 1,2,3 \n Y: 2,4,5 \n dando (1,2), (2,4), (3,5) como puntos de interpolación"
         },
         "Interpolación Lagrange": {
-            "module": ("supCp3.interpoloacion_lagrange", "interpolacion_lagrange"),
+            "module": ("interpolacion_lagrange", "interpolacion_lagrange"),
             "description": "Interpolación usando el polinomio de Lagrange.",
             "required_inputs": ["Puntos x", "Valores y"],
-            "example": "Datos tabulados para aproximar función desconocida"
+            "example": "X: 1,2,3 \n Y: 2,4,5 \n dando (1,2), (2,4), (3,5) como puntos de interpolación"
         }
     }
 
@@ -232,20 +232,20 @@ class App(tk.Tk):
 
     def load_method_form(self, method_name):
         method_info = METHODS[method_name]["module"]
+        package = METHODS[method_name].get("package", "")
 
         if isinstance(method_info, tuple):
             module_name, function_name = method_info
         else:
             module_name = function_name = method_info
 
+        if package:
+            full_module = f"Python.{package}.{module_name}"
+        else:
+            full_module = f"Python.{module_name}"
+
         try:
-            if "supCp3" in module_name:
-                parts = module_name.split(".")
-                module_path = f"{MODULE_PATH}.{parts[0]}"
-                module_name = parts[1]
-                module = importlib.import_module(f"{module_path}.{module_name}")
-            else:
-                module = importlib.import_module(f"{MODULE_PATH}.{module_name}")
+            module = importlib.import_module(full_module)
             func = getattr(module, function_name)
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo cargar el método: {e}")
