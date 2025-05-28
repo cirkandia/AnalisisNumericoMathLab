@@ -414,7 +414,7 @@ class App(tk.Tk):
             text_widget.config(state='disabled')
 
         # NO Solo para Vandermonde, pregunta si desea comparar
-        if method_name == "Vandermonde" or "spline_lineal" or "spline_cubico" or "interpolacion_lagrange" or "interpolacion_newton":
+        if method_name in ["Vandermonde", "spline_lineal", "spline_cubico", "interpolacion_lagrange", "interpolacion_newton"]:
             if messagebox.askyesno("Comparar", "¿Desea comparar con otros métodos de interpolación?"):
                 # Recupera los últimos valores usados (deberás guardarlos en self)
                 comparar_metodos(self.ultimo_x, self.ultimo_y)
