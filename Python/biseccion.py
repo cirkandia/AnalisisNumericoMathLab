@@ -56,13 +56,13 @@ if __name__ == '__main__':
         tolerance = float(input("Ingresa la tolerancia: "))
         max_iterations = int(input("Ingresa el número máximo de iteraciones: "))
 
-        a_final, b_final, iteration_count, matriz = biseccion(function_str, lower_bound, upper_bound, tolerance, max_iterations)
+        # Define la función f usando eval() y una función lambda
+        f = lambda x: eval(function_str)
 
-        if a_final == "Error: f(lower_bound) y f(upper_bound) deben tener signos opuestos":
-            print(a_final)
-        else:
-            print(tabulate(matriz, headers=["Iteración", "a", "f(a)", "pm", "f(pm)", "b", "f(b)", "Error Abs."], tablefmt="fancy_grid"))
-            print(f"\nRaíz aproximada entre a = {a_final} y b = {b_final} después de {iteration_count} iteraciones.")
+        matriz = biseccion(f, lower_bound, upper_bound, tolerance, max_iterations)
+
+        print(tabulate(matriz, headers=["Iteración", "a", "f(a)", "pm", "f(pm)", "b", "f(b)", "Error Abs."], tablefmt="fancy_grid"))
+        print(f"\nRaíz aproximada encontrada después de {len(matriz)-1} iteraciones.")
 
     except Exception as e:
         print(f"Error: Entrada no válida. Compruebe la definición de la función y las entradas numéricas. {e}")
