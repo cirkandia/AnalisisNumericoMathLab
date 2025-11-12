@@ -278,6 +278,10 @@ class App(tk.Tk):
         params = list(sig.parameters.keys())
         use_f = params and params[0] == 'f'
 
+        # Ocultar parámetros internos opcionales que no deben pedirse al usuario
+        SKIP_PARAMS = {'show_report', 'eval_grid', 'auto_compare'}
+        params = [p for p in params if p not in SKIP_PARAMS]
+
         # Campo para la función f(x)
         if use_f:
             tk.Label(input_frame, text="Función f(x) =", font=("Arial", 10, "bold"),
@@ -304,6 +308,18 @@ class App(tk.Tk):
         # Configurar grid
         input_frame.grid_columnconfigure(1, weight=1)
 
+        # inicializar flag para saber si la última llamada pidió show_report
+        self.last_called_show_report = False
+        # controles para comparación automática y densidad de evaluación
+        auto_cmp_var = tk.BooleanVar(value=True)
+        eval_grid_var = tk.StringVar(value='500')
+
+        opts_frame = tk.Frame(main_frame, bg='#f0f0f0')
+        opts_frame.pack(fill='x', pady=(0,10))
+        tk.Checkbutton(opts_frame, text='Comparación automática', variable=auto_cmp_var, bg='#f0f0f0').pack(side='left', padx=(0,10))
+        tk.Label(opts_frame, text='Eval grid:', bg='#f0f0f0').pack(side='left')
+        tk.Entry(opts_frame, textvariable=eval_grid_var, width=6).pack(side='left', padx=(5,0))
+
         def execute():
             try:
                 args = []
@@ -313,7 +329,7 @@ class App(tk.Tk):
                     if not f_str.strip():
                         messagebox.showerror("Error", "Debe ingresar una función f(x)")
                         return
-                    
+
                     # Función lambda más robusta
                     f = lambda x: eval(f_str, {
                         "np": np, "x": x, "math": __import__('math'),
@@ -367,7 +383,27 @@ class App(tk.Tk):
                     self.ultimo_y = y_vals
                     args = [x_vals, y_vals] + args
 
-                result = func(*args)
+                # Si la función acepta el parámetro show_report, pasárselo para que
+                # el propio método haga la comparación y muestre el informe (referencia)
+                kwargs = {}
+                try:
+                    f_sig = inspect.signature(func)
+                    if 'show_report' in f_sig.parameters:
+                        kwargs['show_report'] = True
+                        # pasar opciones adicionales si la función las acepta
+                        if 'eval_grid' in f_sig.parameters:
+                            try:
+                                kwargs['eval_grid'] = int(eval_grid_var.get())
+                            except Exception:
+                                kwargs['eval_grid'] = 500
+                        if 'auto_compare' in f_sig.parameters:
+                            kwargs['auto_compare'] = bool(auto_cmp_var.get())
+                except Exception:
+                    pass
+
+                result = func(*args, **kwargs)
+                # Guardar si la llamada solicitó informe para evitar doble prompt
+                self.last_called_show_report = bool(kwargs.get('show_report', False))
                 self.show_result(method_name, result)
 
             except Exception as e:
@@ -413,8 +449,9 @@ class App(tk.Tk):
             text_widget.insert('1.0', str(result))
             text_widget.config(state='disabled')
 
-        # NO Solo para Vandermonde, pregunta si desea comparar
-        if method_name in ["Vandermonde", "spline_lineal", "spline_cubico", "interpolacion_lagrange", "interpolacion_newton"]:
+        # Si la última llamada ya pidió show_report (la propia función hizo la comparación),
+        # no mostrar el prompt de comparación para evitar duplicados.
+        if method_name in ["Vandermonde", "spline_lineal", "spline_cubico", "interpolacion_lagrange", "interpolacion_newton"] and not getattr(self, 'last_called_show_report', False):
             if messagebox.askyesno("Comparar", "¿Desea comparar con otros métodos de interpolación?"):
                 # Recupera los últimos valores usados (deberás guardarlos en self)
                 comparar_metodos(self.ultimo_x, self.ultimo_y)
@@ -433,43 +470,57 @@ class App(tk.Tk):
 
     def is_tabular_result(self, result):
         """Determina si el resultado debe mostrarse como tabla"""
+        # Si es una tupla tipo (texto, info_dict) o (texto, lista) considerarlo tabular
         if isinstance(result, tuple) and len(result) >= 2:
             last_element = result[-1]
-            return isinstance(last_element, list) and len(last_element) > 0
+            return (isinstance(last_element, list) and len(last_element) > 0) or (isinstance(last_element, dict) and len(last_element) > 0)
+        # Un dict por sí solo también es tabular (clave/valor)
+        if isinstance(result, dict) and len(result) > 0:
+            return True
         return isinstance(result, list) and len(result) > 0
 
     def create_result_table(self, parent_frame, result):
         """Crea una tabla organizada para mostrar los resultados"""
         
         # Extraer datos tabulares
+        table_data = None
+        header_text = None
         if isinstance(result, tuple):
+            # resultado principal (texto) -> mostrar arriba como resumen
+            header_text = "\n".join([str(r) for r in result[:-1]]) if len(result) > 1 else None
             table_data = result[-1]
-            # Mostrar información adicional si existe
-            if len(result) > 1:
-                info_text = scrolledtext.ScrolledText(parent_frame, height=4, width=80, 
-                                                    font=("Arial", 10), bg='#ecf0f1')
-                info_text.pack(fill='x', padx=10, pady=(10, 5))
-                
-                info_str = "Información adicional:\n"
-                for i, item in enumerate(result[:-1]):
-                    info_str += f"• {item}\n"
-                
-                info_text.insert('1.0', info_str)
-                info_text.config(state='disabled')
+        elif isinstance(result, dict):
+            table_data = result
         else:
             table_data = result
+
+        # Mostrar resumen/resultado principal si existe
+        if header_text:
+            info_text = scrolledtext.ScrolledText(parent_frame, height=4, width=80, 
+                                                font=("Courier", 10), bg='#ecf0f1')
+            info_text.pack(fill='x', padx=10, pady=(10, 5))
+            info_text.insert('1.0', header_text)
+            info_text.config(state='disabled')
 
         # Frame para la tabla
         table_frame = tk.Frame(parent_frame, bg='white')
         table_frame.pack(fill='both', expand=True, padx=10, pady=5)
 
-        # Determinar columnas
-        if isinstance(table_data[0], dict):
+        # Determinar columnas según el tipo de table_data
+        if isinstance(table_data, dict):
+            # mostrar clave/valor
+            columns = ["Propiedad", "Valor"]
+            rows_iter = [(k, table_data[k]) for k in table_data]
+        elif isinstance(table_data, list) and len(table_data) > 0 and isinstance(table_data[0], dict):
             columns = list(table_data[0].keys())
-        elif isinstance(table_data[0], list):
+            rows_iter = [tuple(row.get(col, '') for col in columns) for row in table_data]
+        elif isinstance(table_data, list) and len(table_data) > 0 and isinstance(table_data[0], list):
             columns = [f"Col_{i+1}" for i in range(len(table_data[0]))]
+            rows_iter = table_data
         else:
-            columns = ["Iteración", "Valor"]
+            # fallback: mostrar cada elemento como una fila simple
+            columns = ["Elemento"]
+            rows_iter = [(str(r),) for r in table_data] if isinstance(table_data, list) else [(str(table_data),)]
 
         # Crear Treeview
         tree = ttk.Treeview(table_frame, columns=columns, show='headings', height=15)
@@ -480,14 +531,13 @@ class App(tk.Tk):
             tree.column(col, width=120, anchor='center')
 
         # Insertar datos
-        for i, row in enumerate(table_data):
+        for row in rows_iter:
             if isinstance(row, dict):
                 values = [str(row.get(col, '')) for col in columns]
-            elif isinstance(row, list):
+            elif isinstance(row, (list, tuple)):
                 values = [str(val) for val in row]
             else:
-                values = [str(i+1), str(row)]
-            
+                values = [str(row)]
             tree.insert('', 'end', values=values)
 
         # Scrollbars
@@ -507,8 +557,62 @@ class App(tk.Tk):
         summary_frame = tk.Frame(parent_frame, bg='#f0f0f0')
         summary_frame.pack(fill='x', padx=10, pady=5)
         
-        tk.Label(summary_frame, text=f"Total de iteraciones: {len(table_data)}", 
-                font=("Arial", 10, "bold"), bg='#f0f0f0', fg='#2c3e50').pack(side='left')
+        # Mostrar un resumen genérico según tipo de datos
+        if isinstance(table_data, dict):
+            tk.Label(summary_frame, text=f"Propiedades: {len(table_data)}", 
+                    font=("Arial", 10, "bold"), bg='#f0f0f0', fg='#2c3e50').pack(side='left')
+        elif isinstance(table_data, list):
+            tk.Label(summary_frame, text=f"Filas: {len(table_data)}", 
+                    font=("Arial", 10, "bold"), bg='#f0f0f0', fg='#2c3e50').pack(side='left')
+        else:
+            tk.Label(summary_frame, text="Resultado", 
+                    font=("Arial", 10, "bold"), bg='#f0f0f0', fg='#2c3e50').pack(side='left')
+
+        # Si hay polinomios en el dict, mostrar botón para verlos completos
+        poly_keys = ['polinomio_str', 'polinomios_por_tramo', 'polinomios_base']
+        has_poly = False
+        poly_text = None
+        if isinstance(table_data, dict):
+            for k in poly_keys:
+                if k in table_data and table_data[k]:
+                    has_poly = True
+                    # preferir polinomios_por_tramo o polinomios_base
+                    if k == 'polinomios_por_tramo' or k == 'polinomios_base':
+                        entries = table_data[k]
+                        if isinstance(entries, (list, tuple)):
+                            poly_text = "\n\n".join(str(e) for e in entries)
+                            break
+                    else:
+                        poly_text = str(table_data[k])
+                        break
+
+        if has_poly and poly_text:
+            btn_frame = tk.Frame(parent_frame, bg='#f0f0f0')
+            btn_frame.pack(fill='x', padx=10, pady=(0,10))
+            tk.Button(btn_frame, text="Ver polinomio(s) completos", font=("Arial", 10, "bold"),
+                      bg='#8e44ad', fg='white', padx=10, pady=4, cursor='hand2',
+                      command=lambda txt=poly_text: self.show_polynomials_modal(txt)).pack(side='right')
+
+    def show_polynomials_modal(self, pol_text):
+        """Muestra un modal con los polinomios completos en texto monoespaciado y scroll."""
+        modal = tk.Toplevel(self)
+        modal.title("Polinomio(s) completos")
+        modal.geometry("700x500")
+
+        txt = scrolledtext.ScrolledText(modal, wrap='none', font=("Courier", 10))
+        txt.pack(fill='both', expand=True, padx=10, pady=10)
+        txt.insert('1.0', pol_text)
+        txt.config(state='disabled')
+
+        # Botón para copiar al portapapeles
+        def copy_all():
+            self.clipboard_clear()
+            self.clipboard_append(pol_text)
+            messagebox.showinfo("Copiado", "Polinomio(s) copiado(s) al portapapeles.")
+
+        btn_frame = tk.Frame(modal)
+        btn_frame.pack(fill='x', padx=10, pady=(0,10))
+        tk.Button(btn_frame, text="Copiar todo", command=copy_all, bg='#3498db', fg='white').pack(side='right')
 
 if __name__ == "__main__":
     app = App()
