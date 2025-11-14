@@ -1,6 +1,9 @@
 import numpy as np
-from tabulate import tabulate
 import ast
+try:
+    from Python.gui_helpers import compute_spectral_radius
+except Exception:
+    from gui_helpers import compute_spectral_radius
 
 def str_to_numpy_matrix(matrix_str):
     """
@@ -16,10 +19,22 @@ def str_to_numpy_matrix(matrix_str):
         return None
     
 
-def jacobi(matrix_a_str, vector_b_str, initial_guess_str, tolerance, max_iterations, error_type):
-    matrix_a = str_to_numpy_matrix(matrix_a_str)
-    vector_b = str_to_numpy_matrix(vector_b_str)
-    initial_guess = str_to_numpy_matrix(initial_guess_str)
+def jacobi(A, b, x0, tolerance, max_iterations, error_type='rela', show_report=False, error_types=None, auto_compare=True):
+    # si se solicita informe comparativo, delegar a la versión en supCp2 (si existe)
+    if show_report:
+        try:
+            from Python.supCp2 import subjacobi as sj
+            return sj.jacobi(A, b, x0, tolerance, max_iterations, error_type, show_report=True, error_types=error_types, auto_compare=auto_compare)
+        except Exception:
+            try:
+                import supCp2.subjacobi as sj
+                return sj.jacobi(A, b, x0, tolerance, max_iterations, error_type, show_report=True, error_types=error_types, auto_compare=auto_compare)
+            except Exception:
+                pass
+    # A, b, x0 pueden ser numpy arrays (desde GUI2) o strings (ejecución directa)
+    matrix_a = A if isinstance(A, np.ndarray) else str_to_numpy_matrix(A)
+    vector_b = b if isinstance(b, np.ndarray) else str_to_numpy_matrix(b)
+    initial_guess = x0 if isinstance(x0, np.ndarray) else str_to_numpy_matrix(x0)
     results_matrix = []
     diagonal_matrix = np.diag(np.diag(matrix_a))
     lu_matrix = matrix_a - diagonal_matrix
@@ -47,4 +62,15 @@ def jacobi(matrix_a_str, vector_b_str, initial_guess_str, tolerance, max_iterati
             break
 
     headers = ["Iteración", "Solución", "Error absoluto", "Error relativo"]
-    return (headers, results_matrix)
+    # Calcular radio espectral
+    rho, _ = compute_spectral_radius(matrix_a, method='jacobi')
+    can_conv = False if rho is None else (rho < 1)
+
+    summary = (
+        f"Radio espectral: {rho:.6f}" if rho is not None else "Radio espectral: Desconocido",
+        f"Converge (rho<1)?: {'Sí' if can_conv else 'No'}",
+    )
+
+    # Devolver (summary_text, table_rows)
+    summary_text = "\n".join(summary)
+    return (summary_text, results_matrix)
