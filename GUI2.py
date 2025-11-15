@@ -1037,18 +1037,55 @@ class App(tk.Tk):
         table_frame = tk.Frame(parent_frame, bg='white')
         table_frame.pack(fill='both', expand=True, padx=10, pady=5)
 
+        custom_headers = False  # <- para saber si usamos texto tal cual o el .title()
+
         if isinstance(table_data, dict):
             columns = ["Propiedad", "Valor"]
             rows_iter = [(k, table_data[k]) for k in table_data]
+
         elif isinstance(table_data, list) and len(table_data) > 0 and isinstance(table_data[0], dict):
             columns = list(table_data[0].keys())
             rows_iter = [tuple(row.get(col, '') for col in columns) for row in table_data]
+
         elif isinstance(table_data, list) and len(table_data) > 0 and isinstance(table_data[0], list):
-            if method_name == "Bisección" and len(table_data[0]) == 8:
+            n_cols = len(table_data[0])
+
+            # === CABECERAS PERSONALIZADAS POR MÉTODO ===
+            if method_name == "Bisección" and n_cols == 8:
                 columns = ["Iteración", "a", "f(a)", "pm", "f(pm)", "b", "f(b)", "Error Abs."]
+                custom_headers = True
+
+            elif method_name == "Regla Falsa" and n_cols == 8:
+                # [Iter, A, F(A), B, F(B), Xr, F(Xr), Error]
+                columns = ["Iteración", "a", "f(a)", "b", "f(b)", "xr", "f(xr)", "Error"]
+                custom_headers = True
+
+            elif method_name == "Newton" and n_cols == 5:
+                # [Iter, x, f(x), f'(x), Error]
+                columns = ["Iteración", "x_n", "f(x_n)", "f'(x_n)", "Error"]
+                custom_headers = True
+
+            elif method_name == "Secante" and n_cols == 5:
+                # [Iter, x_{i-1}, x_i, f(x_i), Error]
+                columns = ["Iteración", "x_{n-1}", "x_n", "f(x_n)", "Error"]
+                custom_headers = True
+
+            elif method_name == "Punto Fijo" and n_cols == 4:
+                # [Iter, x, g(x), Error]
+                columns = ["Iteración", "x_n", "g(x_n)", "Error"]
+                custom_headers = True
+
+            elif method_name == "Raíces Múltiples" and n_cols == 6:
+                # [Iter, x, f(x), f'(x), f''(x), Error]
+                columns = ["Iteración", "x_n", "f(x_n)", "f'(x_n)", "f''(x_n)", "Error"]
+                custom_headers = True
+
             else:
-                columns = [f"Col_{i+1}" for i in range(len(table_data[0]))]
+                # Caso genérico
+                columns = [f"Col_{i+1}" for i in range(n_cols)]
+
             rows_iter = table_data
+
         else:
             columns = ["Elemento"]
             rows_iter = [(str(r),) for r in table_data] if isinstance(table_data, list) else [(str(table_data),)]
@@ -1056,7 +1093,11 @@ class App(tk.Tk):
         tree = ttk.Treeview(table_frame, columns=columns, show='headings', height=15)
 
         for col in columns:
-            tree.heading(col, text=col.replace('_', ' ').title())
+            if custom_headers:
+                heading_text = col          # usamos el texto tal cual lo definimos arriba
+            else:
+                heading_text = col.replace('_', ' ').title()
+            tree.heading(col, text=heading_text)
             tree.column(col, width=120, anchor='center')
 
         for row in rows_iter:
@@ -1114,7 +1155,7 @@ class App(tk.Tk):
             tk.Button(btn_frame, text="Ver polinomio(s) completos", font=("Arial", 10, "bold"),
                       bg='#8e44ad', fg='white', padx=10, pady=4, cursor='hand2',
                       command=lambda txt=poly_text: self.show_polynomials_modal(txt)).pack(side='right')
-
+            
     def show_polynomials_modal(self, pol_text):
         modal = tk.Toplevel(self)
         modal.title("Polinomio(s) completos")
