@@ -16,46 +16,317 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 METHODS = {
     "Bisección": {
         "module": ("biseccion", "biseccion"),
-        "description": "Encuentra la raíz de una función en un intervalo dado mediante división sucesiva del intervalo.",
+        # Descripción corta, general
+        "description": (
+            "El método de bisección es un procedimiento numérico para encontrar una raíz real de "
+            "una ecuación f(x) = 0 dentro de un intervalo [a, b] donde la función cambia de signo."
+        ),
+        # Para qué sirve
+        "purpose": (
+            "Se utiliza cuando se conoce un intervalo [a, b] tal que f(a) y f(b) tienen signos opuestos, "
+            "lo que indica (bajo ciertas condiciones) la existencia de al menos una raíz en ese intervalo. "
+            "Es un método muy seguro y sencillo, ideal para iniciar el estudio de métodos de búsqueda de raíces."
+        ),
+        # Cómo funciona
+        "how_it_works": (
+            "1. Se parte de un intervalo inicial [a, b] con f(a) y f(b) de signos opuestos.\n"
+            "2. Se calcula el punto medio pm = (a + b) / 2.\n"
+            "3. Se evalúa f(pm):\n"
+            "   • Si f(a)·f(pm) < 0, la raíz está en [a, pm], entonces b = pm.\n"
+            "   • Si f(pm)·f(b) < 0, la raíz está en [pm, b], entonces a = pm.\n"
+            "4. Se repite el proceso reduciendo el tamaño del intervalo.\n"
+            "5. El método se detiene cuando el error es menor que la tolerancia establecida o se alcanza "
+            "el máximo número de iteraciones."
+        ),
+        # Datos requeridos (para mostrar en la interfaz)
         "required_inputs": [
-            "Función f(x)",
-            "Límite inferior (a)",
+            "Función f(x) continua en el intervalo [a, b] (por ejemplo: x**3 - x - 1)",
+            "Límite inferior (a), donde f(a) y f(b) tengan signos opuestos",
             "Límite superior (b)",
-            "Tolerancia (Tol)",
-            "Máximo iteraciones (it)"
+            "Tolerancia (Tol), por ejemplo 1e-3 o 0.001",
+            "Máximo iteraciones (it), por ejemplo 50 o 100"
         ],
-        "example": "f(x) = x**3 - x - 1, a = 1, b = 2, Tol = 0.01, it = 100"
+        # Qué verá el usuario en tu GUI
+        "ui_info": (
+            "En la interfaz podrás ver:\n"
+            "• Una tabla de iteraciones con los valores de a, b, el punto medio pm, f(pm) y el error.\n"
+            "• La aproximación final de la raíz y el número total de iteraciones utilizadas.\n"
+            "• Si utilizas la opción de graficar, verás la curva de f(x) y los puntos de aproximación "
+            "mostrados sobre la gráfica, lo que ayuda a visualizar cómo el método se acerca a la raíz."
+        ),
+        # Ejemplo concreto
+        "example": (
+            "Ejemplo de uso:\n"
+            "• f(x) = x**3 - x - 1\n"
+            "• a = 1\n"
+            "• b = 2\n"
+            "• Tol = 0.01\n"
+            "• it = 100\n\n"
+            "En este caso, f(1) y f(2) tienen signos opuestos, por lo que el método de bisección buscará "
+            "una raíz de f(x) = 0 dentro del intervalo [1, 2]."
+        )
     },
+
     "Regla Falsa": {
         "module": ("regla_falsa", "false_position_method"),
-        "description": "Método de aproximación lineal para encontrar raíces, similar a bisección pero más eficiente.",
-        "required_inputs": ["Función f(x)", "Límite inferior (a)", "Límite superior (b)", "Tolerancia", "Máximo iteraciones"],
-        "example": "f(x) = x**2 - 2, a = 0, b = 2"
+        # Descripción corta, general
+        "description": (
+            "El método de regla falsa (o posición falsa) es un procedimiento numérico para encontrar una raíz real "
+            "de la ecuación f(x) = 0 en un intervalo [a, b] donde la función cambia de signo, usando una aproximación "
+            "lineal (una recta secante) entre los extremos del intervalo."
+        ),
+        # Para qué sirve
+        "purpose": (
+            "Se utiliza para localizar raíces reales cuando se conoce un intervalo [a, b] tal que f(a) y f(b) tienen "
+            "signos opuestos. Suele converger más rápido que el método de bisección en muchos casos, manteniendo la "
+            "seguridad de trabajar siempre en un intervalo donde existe una raíz."
+        ),
+        # Cómo funciona
+        "how_it_works": (
+            "1. Se parte de un intervalo inicial [a, b] con f(a) y f(b) de signos opuestos.\n"
+            "2. Se traza la recta que une los puntos (a, f(a)) y (b, f(b)) y se calcula el punto de corte con el eje x:\n"
+            "      xr = b - f(b) * (b - a) / (f(b) - f(a)).\n"
+            "3. Se evalúa f(xr):\n"
+            "   • Si f(a)·f(xr) < 0, la raíz está en [a, xr], entonces b = xr.\n"
+            "   • Si f(xr)·f(b) < 0, la raíz está en [xr, b], entonces a = xr.\n"
+            "4. Se repite el proceso actualizando siempre el extremo que conserva el cambio de signo.\n"
+            "5. El método se detiene cuando el error es menor que la tolerancia establecida o se alcanza "
+            "el máximo número de iteraciones."
+        ),
+        # Datos requeridos
+        "required_inputs": [
+            "Función f(x) continua en el intervalo [a, b] (por ejemplo: x**2 - 2)",
+            "Límite inferior (a), donde f(a) y f(b) tengan signos opuestos",
+            "Límite superior (b)",
+            "Tolerancia (Tol), por ejemplo 1e-3 o 0.001",
+            "Máximo iteraciones (it), por ejemplo 50 o 100"
+        ],
+        # Qué verá el usuario en la GUI
+        "ui_info": (
+            "En la interfaz podrás ver:\n"
+            "• Una tabla de iteraciones con los valores de a, b, xr (aproximación por regla falsa), f(xr) y el error.\n"
+            "• La aproximación final de la raíz y el número total de iteraciones utilizadas.\n"
+            "• Si utilizas la opción de graficar, verás la curva de f(x) y las aproximaciones xr sobre la gráfica, "
+            "lo que permite visualizar cómo el método se acerca a la raíz usando rectas secantes al intervalo."
+        ),
+        # Ejemplo
+        "example": (
+            "Ejemplo de uso:\n"
+            "• f(x) = x**2 - 2\n"
+            "• a = 0\n"
+            "• b = 2\n"
+            "• Tol = 0.001\n"
+            "• it = 50\n\n"
+            "En este caso, f(0) y f(2) tienen signos opuestos, por lo que la regla falsa buscará una raíz de "
+            "f(x) = 0 dentro del intervalo [0, 2], aproximando la raíz de √2."
+        )
     },
+
     "Newton": {
         "module": ("newton", "newton_method"),
-        "description": "Utiliza la tangente a la curva para aproximar la raíz mediante derivadas.",
-        "required_inputs": ["Función f(x)", "Valor inicial (x0)", "Tolerancia", "Máximo iteraciones"],
-        "example": "f(x) = x**2 - 2, x0 = 1.5"
+        # Descripción corta, general
+        "description": (
+            "El método de Newton (o Newton-Raphson) es un procedimiento iterativo para encontrar raíces de la ecuación "
+            "f(x) = 0 utilizando información de la derivada de la función."
+        ),
+        # Para qué sirve
+        "purpose": (
+            "Se utiliza para obtener aproximaciones rápidas de raíces reales cuando se dispone de una buena estimación "
+            "inicial y la función es derivable cerca de la raíz. Es uno de los métodos más rápidos en converger, "
+            "aunque requiere más cuidado en la elección del valor inicial."
+        ),
+        # Cómo funciona
+        "how_it_works": (
+            "1. Se elige un valor inicial x0 cercano a la raíz que se desea encontrar.\n"
+            "2. En cada iteración se calcula la siguiente aproximación usando la fórmula:\n"
+            "      x_{n+1} = x_n - f(x_n) / f'(x_n).\n"
+            "3. Geométricamente, se toma la recta tangente a la curva y = f(x) en el punto (x_n, f(x_n)) y se busca "
+            "el punto donde esa recta corta al eje x.\n"
+            "4. El proceso se repite hasta que el cambio entre dos aproximaciones consecutivas sea menor que la "
+            "tolerancia o se alcance el máximo número de iteraciones.\n"
+            "5. Si la derivada f'(x_n) es muy pequeña o cero, el método puede fallar o volverse inestable."
+        ),
+        # Datos requeridos
+        "required_inputs": [
+            "Función f(x) derivable cerca de la raíz (por ejemplo: x**2 - 2)",
+            "Valor inicial (x0) cercano a la raíz buscada",
+            "Tolerancia (Tol), por ejemplo 1e-6 o 1e-4",
+            "Máximo iteraciones (it), por ejemplo 50 o 100"
+        ],
+        # Qué verá el usuario en la GUI
+        "ui_info": (
+            "En la interfaz podrás ver:\n"
+            "• Una tabla de iteraciones con los valores de x_n, f(x_n), f'(x_n) y el error en cada paso.\n"
+            "• La aproximación final de la raíz obtenida, junto con el error final y el número de iteraciones usadas.\n"
+            "• Si utilizas la opción de graficar, verás la función f(x) y los puntos x_n sobre la curva, lo que permite "
+            "observar cómo el método se mueve siguiendo las tangentes hacia la raíz."
+        ),
+        # Ejemplo
+        "example": (
+            "Ejemplo de uso:\n"
+            "• f(x) = x**2 - 2\n"
+            "• x0 = 1.5\n"
+            "• Tol = 1e-5\n"
+            "• it = 50\n\n"
+            "En este caso, el método de Newton encontrará una aproximación de la raíz de f(x) = 0, que corresponde a √2, "
+            "partiendo de la estimación inicial x0 = 1.5."
+        )
     },
+
     "Secante": {
         "module": ("secante", "secante"),
-        "description": "Aproxima la derivada usando dos puntos iniciales, no requiere calcular derivadas.",
-        "required_inputs": ["Función f(x)", "Primer valor inicial (x0)", "Segundo valor inicial (x1)", "Tolerancia", "Máximo iteraciones"],
-        "example": "f(x) = x**3 - 2, x0 = 1, x1 = 2"
+        # Descripción corta, general
+        "description": (
+            "El método de la secante es un procedimiento iterativo para encontrar raíces de f(x) = 0 usando una "
+            "aproximación de la derivada a partir de dos puntos, evitando calcular f'(x) de forma explícita."
+        ),
+        # Para qué sirve
+        "purpose": (
+            "Se utiliza cuando se desea la rapidez de un método tipo Newton pero no se quiere o no se puede calcular "
+            "la derivada de la función. Solo requiere evaluar f(x) en cada iteración y partir de dos valores iniciales."
+        ),
+        # Cómo funciona
+        "how_it_works": (
+            "1. Se eligen dos valores iniciales x0 y x1, preferiblemente cercanos a la raíz buscada.\n"
+            "2. Se aproxima la derivada con la pendiente de la recta secante entre (x0, f(x0)) y (x1, f(x1)):\n"
+            "      f'(x) ≈ [f(x1) - f(x0)] / (x1 - x0).\n"
+            "3. Se calcula la siguiente aproximación:\n"
+            "      x_{n+1} = x_n - f(x_n) * (x_n - x_{n-1}) / (f(x_n) - f(x_{n-1})).\n"
+            "4. Se repite el proceso, usando siempre los dos últimos valores para construir la nueva secante.\n"
+            "5. El método se detiene cuando el error entre dos aproximaciones consecutivas es menor que la tolerancia "
+            "o se alcanza el máximo número de iteraciones."
+        ),
+        # Datos requeridos
+        "required_inputs": [
+            "Función f(x) (por ejemplo: x**3 - 2)",
+            "Primer valor inicial (x0), cercano a la raíz",
+            "Segundo valor inicial (x1), cercano a la raíz y distinto de x0",
+            "Tolerancia (Tol), por ejemplo 1e-5 o 1e-4",
+            "Máximo iteraciones (it), por ejemplo 50 o 100"
+        ],
+        # Qué verá el usuario en la GUI
+        "ui_info": (
+            "En la interfaz podrás ver:\n"
+            "• Una tabla de iteraciones con los valores de x_{n-1}, x_n, f(x_n) y el error.\n"
+            "• La aproximación final de la raíz y el número de iteraciones necesarias.\n"
+            "• Si utilizas la opción de graficar, verás la función f(x) y las aproximaciones sucesivas de la secante, "
+            "lo que muestra cómo las rectas secantes van acercándose a la raíz."
+        ),
+        # Ejemplo
+        "example": (
+            "Ejemplo de uso:\n"
+            "• f(x) = x**3 - 2\n"
+            "• x0 = 1\n"
+            "• x1 = 2\n"
+            "• Tol = 1e-5\n"
+            "• it = 50\n\n"
+            "En este caso, el método de la secante buscará una raíz de f(x) = 0 (es decir, la raíz cúbica de 2) "
+            "usando como puntos iniciales x0 = 1 y x1 = 2."
+        )
     },
+
     "Punto Fijo": {
         "module": ("puntofijo", "fixed_point_iteration"),
-        "description": "Encuentra puntos donde f(x) = x mediante iteración de una función g(x).",
-        "required_inputs": ["Función g(x)", "Valor inicial (x0)", "Tolerancia", "Máximo iteraciones"],
-        "example": "g(x) = (x + 2/x)/2, x0 = 1"
+        # Descripción corta, general
+        "description": (
+            "El método de punto fijo es un procedimiento iterativo que busca un valor x tal que x = g(x), "
+            "reformulando el problema original f(x) = 0 en términos de una función g(x)."
+        ),
+        # Para qué sirve
+        "purpose": (
+            "Se utiliza para encontrar raíces de una ecuación f(x) = 0 reescribiéndola como x = g(x). "
+            "Si se elige una función g(x) adecuada que cumpla ciertas condiciones, la iteración converge al punto fijo, "
+            "que corresponde a la raíz buscada."
+        ),
+        # Cómo funciona
+        "how_it_works": (
+            "1. Se reescribe el problema f(x) = 0 en la forma x = g(x).\n"
+            "2. Se elige un valor inicial x0.\n"
+            "3. En cada iteración se calcula:\n"
+            "      x_{n+1} = g(x_n).\n"
+            "4. Se repite el proceso hasta que la diferencia |x_{n+1} - x_n| sea menor que la tolerancia establecida "
+            "o se alcance el máximo número de iteraciones.\n"
+            "5. La convergencia depende de la elección de g(x). Si |g'(x)| < 1 en una vecindad de la solución, "
+            "el método suele converger."
+        ),
+        # Datos requeridos
+        "required_inputs": [
+            "Función g(x) tal que la solución de interés cumpla x = g(x) (por ejemplo: g(x) = (x + 2/x) / 2)",
+            "Valor inicial (x0) cercano al punto fijo",
+            "Tolerancia (Tol), por ejemplo 1e-5 o 1e-4",
+            "Máximo iteraciones (it), por ejemplo 50 o 100"
+        ],
+        # Qué verá el usuario en la GUI
+        "ui_info": (
+            "En la interfaz podrás ver:\n"
+            "• Una tabla de iteraciones con los valores de x_n, g(x_n) y el error entre aproximaciones.\n"
+            "• El valor aproximado del punto fijo (que corresponde a la raíz) y el número de iteraciones.\n"
+            "• Si utilizas la opción de graficar para métodos de raíces, podrás comparar visualmente las aproximaciones "
+            "x_n sobre la función asociada."
+        ),
+        # Ejemplo
+        "example": (
+            "Ejemplo de uso:\n"
+            "Supongamos que queremos aproximar la raíz positiva de la ecuación x^2 - 2 = 0.\n"
+            "Podemos escribirla como x = g(x) = (x + 2/x) / 2.\n"
+            "• g(x) = (x + 2/x) / 2\n"
+            "• x0 = 1\n"
+            "• Tol = 1e-5\n"
+            "• it = 50\n\n"
+            "Aplicando el método de punto fijo, la sucesión x_{n+1} = g(x_n) se aproxima a √2."
+        )
     },
+
     "Raíces Múltiples": {
         "module": ("raices_m", "multiple_roots"),
-        "description": "Encuentra raíces de multiplicidad mayor a 1 usando primera y segunda derivada.",
-        "required_inputs": ["Función f(x)", "Valor inicial (x0)", "Tolerancia", "Máximo iteraciones"],
-        "example": "f(x) = (x-1)^2, x0 = 0.5"
+        # Descripción corta, general
+        "description": (
+            "El método de raíces múltiples es una variante del método de Newton diseñada para encontrar raíces de "
+            "multiplicidad mayor que 1, utilizando información de la primera y la segunda derivada de la función."
+        ),
+        # Para qué sirve
+        "purpose": (
+            "Se utiliza cuando la función tiene raíces múltiples (por ejemplo, cuando f(x) = (x - r)^m con m > 1). "
+            "En estos casos, el método de Newton estándar puede converger muy lentamente o comportarse mal, "
+            "mientras que el método de raíces múltiples mejora la convergencia utilizando f(x), f'(x) y f''(x)."
+        ),
+        # Cómo funciona
+        "how_it_works": (
+            "1. Se elige un valor inicial x0 cercano a la raíz múltiple que se desea encontrar.\n"
+            "2. En cada iteración se usa la fórmula (una versión modificada de Newton):\n"
+            "      x_{n+1} = x_n - [f(x_n)·f'(x_n)] / ([f'(x_n)]^2 - f(x_n)·f''(x_n)).\n"
+            "3. Esta fórmula tiene en cuenta la multiplicidad de la raíz al incorporar f'(x) y f''(x).\n"
+            "4. Se repite el proceso hasta que el cambio entre dos aproximaciones consecutivas sea menor que la "
+            "tolerancia o se alcance el máximo número de iteraciones.\n"
+            "5. Es importante que la función sea suficientemente suave (derivable dos veces) en torno a la raíz."
+        ),
+        # Datos requeridos
+        "required_inputs": [
+            "Función f(x) con una raíz de multiplicidad mayor que 1 (por ejemplo: (x - 1)**2)",
+            "Valor inicial (x0) cercano a la raíz múltiple",
+            "Tolerancia (Tol), por ejemplo 1e-6 o 1e-4",
+            "Máximo iteraciones (it), por ejemplo 50 o 100"
+        ],
+        # Qué verá el usuario en la GUI
+        "ui_info": (
+            "En la interfaz podrás ver:\n"
+            "• Una tabla de iteraciones con los valores de x_n, f(x_n), f'(x_n), f''(x_n) y el error.\n"
+            "• La aproximación final de la raíz múltiple y el número de iteraciones utilizadas.\n"
+            "• Si utilizas la opción de graficar, podrás ver la función f(x) y cómo las aproximaciones x_n se "
+            "acercan a la raíz donde la curva 'toca' el eje x con multiplicidad mayor que 1."
+        ),
+        # Ejemplo
+        "example": (
+            "Ejemplo de uso:\n"
+            "• f(x) = (x - 1)**2\n"
+            "• x0 = 0.5\n"
+            "• Tol = 1e-6\n"
+            "• it = 50\n\n"
+            "En este caso, la función tiene una raíz múltiple en x = 1. El método de raíces múltiples utilizará "
+            "f(x), f'(x) y f''(x) para aproximar eficientemente esa raíz."
+        )
     },
+
     "Jacobi": {
         "module": ("jacobi", "jacobi"),
         "description": "Resuelve sistemas de ecuaciones lineales mediante iteración usando matriz diagonal.",
@@ -106,6 +377,16 @@ METHODS = {
     }
 }
 
+# Métodos de raíces (Capítulo 1) para el informe comparativo
+ROOT_METHODS = [
+    "Bisección",
+    "Regla Falsa",
+    "Newton",
+    "Secante",
+    "Punto Fijo",
+    "Raíces Múltiples"
+]
+
 # Traducción de parámetros comunes
 SPANISH_PARAMS = {
     "x0": "Valor inicial (x0)",
@@ -138,6 +419,10 @@ class App(tk.Tk):
 
         self.method_var = tk.StringVar()
         self.show_main_menu()
+        # Historial de ejecuciones para el informe comparativo
+        # Cada entrada: {"method", "root", "iterations", "final_error", "error_type"}
+        self.run_history = []
+
 
     def show_main_menu(self):
         for widget in self.winfo_children():
@@ -184,52 +469,222 @@ class App(tk.Tk):
         button_frame.grid_columnconfigure(1, weight=1)
 
     def show_method_info(self, method_name):
+        # Limpiar ventana
         for widget in self.winfo_children():
             widget.destroy()
 
         main_frame = tk.Frame(self, bg='#f0f0f0')
         main_frame.pack(fill='both', expand=True, padx=20, pady=20)
 
-        title = tk.Label(main_frame, text=f"MÉTODO: {method_name.upper()}",
-                         font=("Arial", 16, "bold"), bg='#f0f0f0', fg='#2c3e50')
+        # Título arriba
+        title = tk.Label(
+            main_frame,
+            text=f"MÉTODO: {method_name.upper()}",
+            font=("Arial", 16, "bold"),
+            bg='#f0f0f0',
+            fg='#2c3e50'
+        )
         title.pack(pady=(0, 15))
 
         method_info = METHODS[method_name]
 
-        desc_frame = tk.LabelFrame(main_frame, text="Descripción", font=("Arial", 12, "bold"),
-                                   bg='#f0f0f0', fg='#2c3e50', padx=10, pady=10)
-        desc_frame.pack(fill='x', pady=(0, 15))
+        # ====== CONTENEDOR SCROLLABLE (centro) ======
+        content_container = tk.Frame(main_frame, bg='#f0f0f0')
+        content_container.pack(fill='both', expand=True)
 
-        desc_label = tk.Label(desc_frame, text=method_info["description"],
-                              font=("Arial", 10), bg='#f0f0f0', wraplength=600, justify='left')
-        desc_label.pack()
+        # Canvas + Scrollbar dentro del contenedor
+        canvas = tk.Canvas(content_container, bg='#f0f0f0', highlightthickness=0)
+        scrollbar = ttk.Scrollbar(content_container, orient="vertical", command=canvas.yview)
 
-        req_frame = tk.LabelFrame(main_frame, text="Datos Requeridos", font=("Arial", 12, "bold"),
-                                  bg='#f0f0f0', fg='#2c3e50', padx=10, pady=10)
+        # Frame interno que va dentro del canvas
+        scroll_frame = tk.Frame(canvas, bg='#f0f0f0')
+
+        def on_configure(event):
+            canvas.configure(scrollregion=canvas.bbox("all"))
+
+        scroll_frame.bind("<Configure>", on_configure)
+
+        # Meter el frame dentro del canvas
+        canvas.create_window((0, 0), window=scroll_frame, anchor='nw')
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        # Canvas a la izquierda, scrollbar a la derecha
+        canvas.pack(side='left', fill='both', expand=True)
+        scrollbar.pack(side='right', fill='y')
+
+        # ====== SECCIONES / APARTADOS ======
+
+        # Lista de labels que deben ajustar su wraplength
+        wrap_labels = []
+
+        # 1. Descripción
+        if "description" in method_info:
+            desc_frame = tk.LabelFrame(
+                scroll_frame, text="Descripción",
+                font=("Arial", 12, "bold"),
+                bg='#f0f0f0', fg='#2c3e50',
+                padx=10, pady=10
+            )
+            desc_frame.pack(fill='x', pady=(0, 15))
+
+            desc_label = tk.Label(
+                desc_frame,
+                text=method_info["description"],
+                font=("Arial", 11),
+                bg='#f0f0f0',
+                justify='left',
+                anchor='w'
+            )
+            desc_label.pack(anchor='w', fill='x')
+            wrap_labels.append(desc_label)
+
+        # 2. Para qué sirve
+        if "purpose" in method_info:
+            purpose_frame = tk.LabelFrame(
+                scroll_frame, text="¿Para qué sirve?",
+                font=("Arial", 12, "bold"),
+                bg='#f0f0f0', fg='#2c3e50',
+                padx=10, pady=10
+            )
+            purpose_frame.pack(fill='x', pady=(0, 15))
+
+            purpose_label = tk.Label(
+                purpose_frame,
+                text=method_info["purpose"],
+                font=("Arial", 11),
+                bg='#f0f0f0',
+                fg='#2c3e50',
+                justify='left',
+                anchor='w'
+            )
+            purpose_label.pack(anchor='w', fill='x')
+            wrap_labels.append(purpose_label)
+
+        # 3. Cómo funciona
+        if "how_it_works" in method_info:
+            how_frame = tk.LabelFrame(
+                scroll_frame, text="¿Cómo funciona?",
+                font=("Arial", 12, "bold"),
+                bg='#f0f0f0', fg='#2c3e50',
+                padx=10, pady=10
+            )
+            how_frame.pack(fill='x', pady=(0, 15))
+
+            how_label = tk.Label(
+                how_frame,
+                text=method_info["how_it_works"],
+                font=("Arial", 11),
+                bg='#f0f0f0',
+                fg='#2c3e50',
+                justify='left',
+                anchor='w'
+            )
+            how_label.pack(anchor='w', fill='x')
+            wrap_labels.append(how_label)
+
+        # 4. Datos requeridos
+        req_frame = tk.LabelFrame(
+            scroll_frame, text="Datos requeridos",
+            font=("Arial", 12, "bold"),
+            bg='#f0f0f0', fg='#2c3e50',
+            padx=10, pady=10
+        )
         req_frame.pack(fill='x', pady=(0, 15))
 
-        for req in method_info["required_inputs"]:
-            tk.Label(req_frame, text=f"• {req}", font=("Arial", 10),
-                     bg='#f0f0f0', fg='#2c3e50').pack(anchor='w')
+        for req in method_info.get("required_inputs", []):
+            lbl = tk.Label(
+                req_frame,
+                text=f"• {req}",
+                font=("Arial", 11),
+                bg='#f0f0f0',
+                fg='#2c3e50',
+                justify='left',
+                anchor='w'
+            )
+            lbl.pack(anchor='w', fill='x')
+            wrap_labels.append(lbl)
 
-        example_frame = tk.LabelFrame(main_frame, text="Ejemplo", font=("Arial", 12, "bold"),
-                                      bg='#f0f0f0', fg='#2c3e50', padx=10, pady=10)
-        example_frame.pack(fill='x', pady=(0, 20))
+        # 5. Qué verás en la interfaz
+        if "ui_info" in method_info:
+            ui_frame = tk.LabelFrame(
+                scroll_frame, text="¿Qué verás en la interfaz?",
+                font=("Arial", 12, "bold"),
+                bg='#f0f0f0', fg='#2c3e50',
+                padx=10, pady=10
+            )
+            ui_frame.pack(fill='x', pady=(0, 15))
 
-        example_label = tk.Label(example_frame, text=method_info["example"],
-                                 font=("Arial", 10, "italic"), bg='#f0f0f0', fg='#7f8c8d')
-        example_label.pack()
+            ui_label = tk.Label(
+                ui_frame,
+                text=method_info["ui_info"],
+                font=("Arial", 11),
+                bg='#f0f0f0',
+                fg='#2c3e50',
+                justify='left',
+                anchor='w'
+            )
+            ui_label.pack(anchor='w', fill='x')
+            wrap_labels.append(ui_label)
 
+        # 6. Ejemplo
+        if "example" in method_info:
+            example_frame = tk.LabelFrame(
+                scroll_frame, text="Ejemplo",
+                font=("Arial", 12, "bold"),
+                bg='#f0f0f0', fg='#2c3e50',
+                padx=10, pady=10
+            )
+            example_frame.pack(fill='x', pady=(0, 20))
+
+            example_label = tk.Label(
+                example_frame,
+                text=method_info["example"],
+                font=("Arial", 10, "italic"),
+                bg='#f0f0f0',
+                fg='#7f8c8d',
+                justify='left',
+                anchor='w'
+            )
+            example_label.pack(anchor='w', fill='x')
+            wrap_labels.append(example_label)
+
+        # === ACTUALIZAR WRAPLENGTH SEGÚN EL ANCHO VISIBLE DEL CANVAS ===
+        def _update_wrap_all(event, labels=wrap_labels):
+            # event.width es el ancho visible del canvas
+            wrap = max(event.width - 40, 200)   # margen a los lados
+            for lab in labels:
+                lab.config(wraplength=wrap)
+
+        canvas.bind("<Configure>", _update_wrap_all)
+
+        # ====== BOTONES FINALES, CENTRADOS ======
         button_frame = tk.Frame(main_frame, bg='#f0f0f0')
-        button_frame.pack()
+        button_frame.pack(pady=(10, 0))
 
-        tk.Button(button_frame, text="Continuar", font=("Arial", 12, "bold"),
-                  bg='#27ae60', fg='white', padx=20, pady=5, cursor='hand2',
-                  command=lambda: self.load_method_form(method_name)).pack(side='left', padx=10)
+        tk.Button(
+            button_frame,
+            text="Continuar",
+            font=("Arial", 12, "bold"),
+            bg='#27ae60',
+            fg='white',
+            padx=20,
+            pady=5,
+            cursor='hand2',
+            command=lambda: self.load_method_form(method_name)
+        ).pack(side='left', padx=10)
 
-        tk.Button(button_frame, text="Volver", font=("Arial", 12),
-                  bg='#95a5a6', fg='white', padx=20, pady=5, cursor='hand2',
-                  command=self.show_main_menu).pack(side='left')
+        tk.Button(
+            button_frame,
+            text="Volver",
+            font=("Arial", 12),
+            bg='#95a5a6',
+            fg='white',
+            padx=20,
+            pady=5,
+            cursor='hand2',
+            command=self.show_main_menu
+        ).pack(side='left', padx=10)
+
 
     def load_method_form(self, method_name):
         method_info = METHODS[method_name]["module"]
@@ -275,7 +730,8 @@ class App(tk.Tk):
         params = list(sig.parameters.keys())
         use_f = params and params[0] == 'f'
 
-        SKIP_PARAMS = {'show_report', 'eval_grid', 'auto_compare'}
+        # Ahora también saltamos error_type porque lo manejamos con un combobox aparte
+        SKIP_PARAMS = {'show_report', 'eval_grid', 'auto_compare', 'error_type'}
         params = [p for p in params if p not in SKIP_PARAMS]
 
         if use_f:
@@ -305,12 +761,31 @@ class App(tk.Tk):
         auto_cmp_var = tk.BooleanVar(value=True)
         eval_grid_var = tk.StringVar(value='500')
 
+        # NUEVO: tipo de error seleccionado por el usuario
+        error_type_var = tk.StringVar(value='rel')  # 'rel', 'abs' o 'cond'
+
         opts_frame = tk.Frame(main_frame, bg='#f0f0f0')
         opts_frame.pack(fill='x', pady=(0, 10))
-        tk.Checkbutton(opts_frame, text='Comparación automática', variable=auto_cmp_var,
-                       bg='#f0f0f0').pack(side='left', padx=(0, 10))
+
+        tk.Checkbutton(
+            opts_frame,
+            text='Comparación automática',
+            variable=auto_cmp_var,
+            bg='#f0f0f0'
+        ).pack(side='left', padx=(0, 10))
+
         tk.Label(opts_frame, text='Eval grid:', bg='#f0f0f0').pack(side='left')
         tk.Entry(opts_frame, textvariable=eval_grid_var, width=6).pack(side='left', padx=(5, 0))
+
+        tk.Label(opts_frame, text='   Tipo de error:', bg='#f0f0f0').pack(side='left', padx=(15, 0))
+        error_combo = ttk.Combobox(
+            opts_frame,
+            textvariable=error_type_var,
+            values=['rel', 'abs', 'cond'],  # relativo, absoluto, condición
+            width=8,
+            state='readonly'
+        )
+        error_combo.pack(side='left', padx=5)
 
         def execute():
             try:
@@ -339,6 +814,9 @@ class App(tk.Tk):
                 x_vals = None
                 y_vals = None
 
+                tol_value = None
+                max_it_value = None
+
                 for param in params:
                     val = entries[param].get().strip()
                     if not val:
@@ -351,18 +829,28 @@ class App(tk.Tk):
                     elif param == "upper_bound":
                         self.last_b = float(val)
 
-                    if param in ["max_iterations", "n_iter", "iteraciones"]:
+                    # NUEVO: tolerancia
+                    if param == "tolerance":
                         try:
-                            args.append(int(val))
+                            tol_value = float(val)
+                            args.append(tol_value)
+                        except ValueError:
+                            messagebox.showerror("Error", "La tolerancia debe ser un número")
+                            return
+
+                    # máximo de iteraciones
+                    elif param in ["max_iterations", "n_iter", "iteraciones"]:
+                        try:
+                            max_it_value = int(val)
+                            args.append(max_it_value)
                         except ValueError:
                             messagebox.showerror("Error", f"{SPANISH_PARAMS.get(param, param)} debe ser un número entero")
                             return
+
                     elif param.lower() in ["x_points", "puntos x", "valoresx"]:
                         x_vals = [float(x.strip()) for x in val.split(',') if x.strip() != ""]
                     elif param.lower() in ["y_points", "valores y", "valoresy"]:
                         y_vals = [float(y.strip()) for y in val.split(',') if y.strip() != ""]
-                    elif param == "error_type":
-                        args.append(val)
                     elif param == "A":
                         rows = val.split(';')
                         matrix = []
@@ -395,12 +883,39 @@ class App(tk.Tk):
                                 kwargs['eval_grid'] = 500
                         if 'auto_compare' in f_sig.parameters:
                             kwargs['auto_compare'] = bool(auto_cmp_var.get())
+
+                    # NUEVO: pasar tipo de error si el método lo permite
+                    if 'error_type' in f_sig.parameters:
+                        kwargs['error_type'] = error_type_var.get()
                 except Exception:
                     pass
 
                 result = func(*args, **kwargs)
                 self.last_called_show_report = bool(kwargs.get('show_report', False))
+
+                # NUEVO: construir y guardar resumen solo para métodos de raíces
+                if method_name in ROOT_METHODS:
+                    summary = self.build_run_summary(method_name, result, error_type_var.get())
+                    if summary:
+                        self.run_history.append(summary)
+
+                    # ⚠ AUTO-EJECUTAR los otros métodos de raíces para comparación
+                    if auto_cmp_var.get() and use_f and self.last_a is not None and self.last_b is not None:
+                        self.auto_run_other_root_methods(
+                            current_method=method_name,
+                            f_str=self.last_function_str,
+                            a=self.last_a,
+                            b=self.last_b,
+                            tol=tol_value,
+                            max_iter=max_it_value,
+                            error_type=error_type_var.get(),
+                            eval_grid=eval_grid_var.get()
+                        )
                 self.show_result(method_name, result)
+
+                # NUEVO: si el usuario quiere comparación automática e hizo un método de raíces, mostrar informe
+                if auto_cmp_var.get() and method_name in ROOT_METHODS:
+                    self.show_comparison_report(error_type_var.get())
 
             except Exception as e:
                 messagebox.showerror("Error", f"Error en la ejecución: {str(e)}")
@@ -603,6 +1118,296 @@ class App(tk.Tk):
         btn_frame.pack(fill='x', padx=10, pady=(0, 10))
         tk.Button(btn_frame, text="Copiar todo", command=copy_all,
                   bg='#3498db', fg='white').pack(side='right')
+    
+    def build_run_summary(self, method_name, result, error_type):
+        """
+        Extrae un resumen de la ejecución de un método de raíces:
+        raíz aproximada, número de iteraciones y error final.
+        Supone que el último elemento de la tupla 'result' es la tabla de iteraciones.
+        """
+
+        table_data = result[-1] if isinstance(result, tuple) else result
+
+        if not isinstance(table_data, list) or not table_data:
+            return None
+
+        last_row = table_data[-1]
+        if not isinstance(last_row, (list, tuple)):
+            return None
+
+        n_cols = len(last_row)
+
+        # Formatos esperados de tablas (si coinciden, mejor):
+        # Bisección:        [Iter, A, F(A), Pm, F(Pm), B, F(B), Error]
+        # Regla Falsa:      [Iter, A, F(A), B, F(B), Xr, F(Xr), Error]
+        # Newton:           [Iter, x, f(x), f'(x), Error]
+        # Secante:          [Iter, x_{i-1}, x_i, f(x_i), Error]
+        # Punto Fijo:       [Iter, x, g(x), Error]
+        # Raíces Múltiples: [Iter, x, f(x), f'(x), f''(x), Error]
+
+        x_col_map = {
+            "Bisección": 3,        # Pm
+            "Regla Falsa": 5,      # Xr
+            "Newton": 1,           # x
+            "Secante": 2,          # x_i
+            "Punto Fijo": 1,       # x
+            "Raíces Múltiples": 1  # x
+        }
+
+        err_col_map = {
+            "Bisección": 7,        # Error Abs.
+            "Regla Falsa": 7,      # Error
+            "Newton": 4,           # Error
+            "Secante": 4,          # Error
+            "Punto Fijo": 3,       # Error
+            "Raíces Múltiples": 5  # Error
+        }
+
+        # Valores por defecto (plan B) si algo falla:
+        # - raíz ≈ columna 1 (la segunda)
+        # - error ≈ última columna
+        default_x_col = 1 if n_cols > 1 else 0
+        default_err_col = n_cols - 1
+
+        # Elegir índices
+        x_col = x_col_map.get(method_name, default_x_col)
+        err_col = err_col_map.get(method_name, default_err_col)
+
+        # Asegurar que están dentro de rango; si no, usar plan B
+        if x_col >= n_cols:
+            x_col = default_x_col
+        if err_col >= n_cols:
+            err_col = default_err_col
+
+        try:
+            approx_root = float(last_row[x_col])
+        except Exception:
+            # último intento: tomar la segunda columna que haya
+            try:
+                approx_root = float(last_row[default_x_col])
+            except Exception:
+                return None
+
+        try:
+            final_error = abs(float(last_row[err_col]))
+        except Exception:
+            # si falla, probamos con la última columna
+            try:
+                final_error = abs(float(last_row[default_err_col]))
+            except Exception:
+                return None
+
+        iterations = len(table_data)
+
+        return {
+            "method": method_name,
+            "root": approx_root,
+            "iterations": iterations,
+            "final_error": final_error,
+            "error_type": error_type
+        }
+
+    def auto_run_other_root_methods(self, current_method, f_str, a, b, tol, max_iter, error_type, eval_grid):
+        """
+        Ejecuta automáticamente los demás métodos de raíces con la misma función f(x),
+        el mismo intervalo [a, b] y la misma tolerancia / iteraciones, sin mostrar sus tablas,
+        solo para llenar el informe comparativo.
+        """
+
+        # Valores por defecto si algo no vino definido
+        if tol is None:
+            tol = 1e-4
+        if max_iter is None:
+            max_iter = 50
+
+        # Definir f(x) a partir de la cadena f_str
+        def f(x):
+            return eval(f_str, {
+                "np": np, "x": x, "math": math,
+                "sin": np.sin, "cos": np.cos, "tan": np.tan,
+                "exp": np.exp, "log": np.log, "sqrt": np.sqrt
+            })
+
+        for method_name in ROOT_METHODS:
+            if method_name == current_method:
+                continue  # ya lo ejecutó el usuario
+
+            method_info = METHODS[method_name]["module"]
+            package = METHODS[method_name].get("package", "")
+
+            if isinstance(method_info, tuple):
+                module_name, function_name = method_info
+            else:
+                module_name = function_name = method_info
+
+            if package:
+                full_module = f"Python.{package}.{module_name}"
+            else:
+                full_module = f"Python.{module_name}"
+
+            try:
+                module = importlib.import_module(full_module)
+                func = getattr(module, function_name)
+            except Exception:
+                # Si no se puede importar, se salta este método
+                continue
+
+            try:
+                sig = inspect.signature(func)
+            except Exception:
+                continue
+
+            params = list(sig.parameters.keys())
+            SKIP_PARAMS = {'show_report', 'eval_grid', 'auto_compare', 'error_type'}
+            core_params = [p for p in params if p not in SKIP_PARAMS]
+
+            args = []
+            kwargs = {}
+
+            # Si el primer parámetro es f, lo agregamos
+            idx = 0
+            if core_params and core_params[0] == 'f':
+                args.append(f)
+                idx = 1
+
+            # Construir argumentos según nombre de parámetro
+            for p in core_params[idx:]:
+                if p in ('lower_bound', 'a'):
+                    args.append(a)
+                elif p in ('upper_bound', 'b'):
+                    args.append(b)
+                elif p in ('x0', 'x_inicial', 'x_ini'):
+                    x0 = (a + b) / 2.0
+                    args.append(x0)
+                elif p in ('x1', 'x_inicial2', 'x1_ini'):
+                    x1 = b
+                    args.append(x1)
+                elif p == 'tolerance':
+                    args.append(tol)
+                elif p in ('max_iterations', 'n_iter', 'iteraciones'):
+                    args.append(max_iter)
+                else:
+                    # Fallback: usar el punto medio del intervalo
+                    args.append((a + b) / 2.0)
+
+            # Parámetros opcionales por kwargs
+            if 'error_type' in sig.parameters:
+                kwargs['error_type'] = error_type
+            if 'show_report' in sig.parameters:
+                kwargs['show_report'] = False  # no queremos más ventanas
+            if 'eval_grid' in sig.parameters:
+                try:
+                    kwargs['eval_grid'] = int(eval_grid)
+                except Exception:
+                    kwargs['eval_grid'] = 500
+            if 'auto_compare' in sig.parameters:
+                kwargs['auto_compare'] = False
+
+            # Ejecutar el método y guardar resumen
+            try:
+                result = func(*args, **kwargs)
+                summary = self.build_run_summary(method_name, result, error_type)
+                if summary:
+                    self.run_history.append(summary)
+            except Exception:
+                # Si algo falla en este método, simplemente no se añade
+                continue
+
+    
+    def show_comparison_report(self, error_type):
+        """
+        Muestra un informe comparativo entre todos los métodos de raíces que se han ejecutado
+        en esta sesión con el mismo tipo de error (rel/abs/cond).
+        Identifica y resalta cuál fue el mejor método.
+        """
+
+        runs = [r for r in self.run_history if r["error_type"] == error_type]
+
+        if not runs:
+            messagebox.showinfo(
+                "Informe",
+                f"No hay ejecuciones registradas con tipo de error '{error_type}'."
+            )
+            return
+
+        # Mejor método: menor error final; si empatan, menos iteraciones
+        best = min(runs, key=lambda r: (r["final_error"], r["iterations"]))
+
+        win = tk.Toplevel(self)
+        win.title(f"Informe comparativo - Error: {error_type}")
+        win.geometry("700x400")
+        win.configure(bg='#f0f0f0')
+
+        title = tk.Label(
+            win,
+            text=f"INFORME COMPARATIVO (error: {error_type})",
+            font=("Arial", 14, "bold"),
+            bg='#f0f0f0',
+            fg='#2c3e50'
+        )
+        title.pack(pady=(10, 10))
+
+        frame = tk.Frame(win, bg='#f0f0f0')
+        frame.pack(fill='both', expand=True, padx=10, pady=10)
+
+        columns = ("Método", "Raíz aprox.", "Iteraciones", "Error final")
+
+        tree = ttk.Treeview(frame, columns=columns, show='headings', height=10)
+        for col in columns:
+            tree.heading(col, text=col)
+            tree.column(col, width=150, anchor='center')
+
+        for r in runs:
+            vals = (
+                r["method"],
+                f"{r['root']:.6g}",
+                r["iterations"],
+                f"{r['final_error']:.3e}"
+            )
+            item_id = tree.insert('', 'end', values=vals)
+            if r is best:
+                tree.item(item_id, tags=('best',))
+
+        tree.tag_configure('best', background='#d5f5e3')
+
+        vscroll = ttk.Scrollbar(frame, orient='vertical', command=tree.yview)
+        tree.configure(yscrollcommand=vscroll.set)
+
+        tree.grid(row=0, column=0, sticky='nsew')
+        vscroll.grid(row=0, column=1, sticky='ns')
+
+        frame.grid_rowconfigure(0, weight=1)
+        frame.grid_columnconfigure(0, weight=1)
+
+        info_frame = tk.Frame(win, bg='#f0f0f0')
+        info_frame.pack(fill='x', padx=10, pady=(0, 10))
+
+        msg = (
+            f"Mejor método (según error '{error_type}'):\n"
+            f"- {best['method']} con error final ≈ {best['final_error']:.3e} "
+            f"en {best['iterations']} iteraciones."
+        )
+
+        tk.Label(
+            info_frame,
+            text=msg,
+            font=("Arial", 10, "bold"),
+            bg='#f0f0f0',
+            fg='#2c3e50',
+            justify='left'
+        ).pack(anchor='w')
+
+        tk.Button(
+            win,
+            text="Cerrar",
+            font=("Arial", 10, "bold"),
+            bg='#95a5a6',
+            fg='white',
+            padx=15,
+            pady=5,
+            cursor='hand2',
+            command=win.destroy
+        ).pack(pady=(0, 10))
 
     def plot_root_method(self, method_name, result):
         """Grafica f(x) y la sucesión de aproximaciones x_n para varios métodos de raíces."""
