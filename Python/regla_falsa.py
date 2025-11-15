@@ -1,81 +1,102 @@
-from tabulate import tabulate
 import numpy as np
 
-def false_position_method(f, lower_bound, upper_bound, tolerance, max_iterations):
+def false_position_method(
+    f,
+    lower_bound,
+    upper_bound,
+    tolerance,
+    max_iterations,
+    error_type="rel",    # 'abs', 'rel' o 'cond'
+    show_report=True,
+    eval_grid=500,
+    auto_compare=False
+):
     """
-    Encuentra la raíz de una función f usando el método de posición falsa.
+    Método de Regla Falsa (posición falsa) compatible con la GUI.
 
-    Argumentos:
-        f (función): La función para encontrar la raíz
-        lower_bound (float): El límite inferior del intervalo.
-        upper_bound (float): El límite superior del intervalo.
-        tolerancia (float): La tolerancia para la raíz.
-        max_iterations (int): El número máximo de iteraciones.
+    Parámetros:
+        f             : función f(x) ya construida por la interfaz.
+        lower_bound   : límite inferior (a).
+        upper_bound   : límite superior (b).
+        tolerance     : tolerancia deseada.
+        max_iterations: máximo de iteraciones.
+        error_type    : 'abs', 'rel' o 'cond'.
+        show_report, eval_grid, auto_compare: ignorados (para compatibilidad).
 
     Devuelve:
-        tupla: Una tupla que contiene los valores finales de lower_bound y upper_bound, el número de iteraciones y la matriz de iteraciones.
+        (raiz, f(raiz), iteraciones, tabla)
+
+    Tabla (por fila):
+        [Iter, A, F(A), B, F(B), Xr, F(Xr), Error]
     """
-    f_lower_bound = f(lower_bound)
-    f_upper_bound = f(upper_bound)
 
-    if f_lower_bound * f_upper_bound > 0:
-        print("Error: f(lower_bound) y f(upper_bound) deben tener signos opuestos.")
-        return lower_bound, upper_bound, 0, []
+    a = float(lower_bound)
+    b = float(upper_bound)
 
-    denominator = f_upper_bound - f_lower_bound
-    if denominator == 0:
-        print("Error: División por 0")
-        return lower_bound, upper_bound, 0, []
+    f_a = f(a)
+    f_b = f(b)
 
-    midpoint = (f_upper_bound * lower_bound - f_lower_bound * upper_bound) / denominator
-    f_midpoint = f(midpoint)
-    error = 1000
-    iteration_count = 0
+    if f_a * f_b >= 0:
+        raise ValueError("f(a) y f(b) deben tener signos opuestos.")
+
     iteration_data = []
+    xr_prev = None
 
-    while error > tolerance and iteration_count < max_iterations:
-        if f_upper_bound * f_midpoint < 0:
-            lower_bound = midpoint
-            f_lower_bound = f_midpoint
-        else:
-            upper_bound = midpoint
-            f_upper_bound = f_midpoint
-
-        previous_midpoint = midpoint
-        denominator = f_upper_bound - f_lower_bound
-        if denominator == 0:
-            print("Error: División por 0")
+    for k in range(int(max_iterations)):
+        # Fórmula clásica de posición falsa
+        denom = (f_b - f_a)
+        if denom == 0:
+            # Guardamos una fila con error infinito y salimos
+            xr = (a + b) / 2.0
+            f_xr = f(xr)
+            error = float("inf")
+            iteration_data.append([k, a, f_a, b, f_b, xr, f_xr, error])
             break
-        midpoint = (f_upper_bound * lower_bound - f_lower_bound * upper_bound) / denominator
-        f_midpoint = f(midpoint)
-        error = abs(midpoint - previous_midpoint)
-        iteration_count = iteration_count + 1
 
-        iteration_data.append([iteration_count, lower_bound, f_lower_bound, midpoint, f_midpoint, upper_bound, f_upper_bound, error])
+        xr = b - f_b * (b - a) / denom
+        f_xr = f(xr)
 
-    return lower_bound, upper_bound, iteration_count, iteration_data
+        # Cálculo del error según el tipo
+        if xr_prev is None:
+            # primera iteración: usamos longitud de intervalo como referencia
+            base_err = abs(b - a)
+        else:
+            base_err = abs(xr - xr_prev)
 
+        if error_type == "abs":
+            error = base_err
+        elif error_type == "rel":
+            if xr != 0:
+                error = abs(base_err / xr)
+            else:
+                error = base_err
+        elif error_type == "cond":
+            # por ejemplo, residuo |f(xr)|
+            error = abs(f_xr)
+        else:
+            error = base_err
 
-if __name__ == '__main__':
-    function_str = input("Ingrese la función f(x) (e.g., x**3 - 7.51*x**2 + 18.4239*x - 14.8331): ")
-    lower_bound = float(input("Ingresa el límite inferior: "))
-    upper_bound = float(input("Ingresa el límite superior: "))
-    tolerance = float(input("Ingresa la tolerancia: "))
-    max_iterations = int(input("Ingresa el número máximo de iteraciones: "))
+        # Guardar fila en el formato que espera la GUI:
+        # [Iter, A, F(A), B, F(B), Xr, F(Xr), Error]
+        iteration_data.append([k, a, f_a, b, f_b, xr, f_xr, error])
 
-    def f(x):
-        return eval(function_str)
+        # Condición de parada
+        if error < tolerance:
+            break
 
-    f_lower_bound = f(lower_bound)
-    f_upper_bound = f(upper_bound)
-    if f_lower_bound * f_upper_bound > 0:
-        print("Error: f(lower_bound) y f(upper_bound) deben tener signos opuestos.")
-        exit()
+        # Actualizar intervalo preservando el cambio de signo
+        if f_a * f_xr < 0:
+            b = xr
+            f_b = f_xr
+        else:
+            a = xr
+            f_a = f_xr
 
-    lower_bound, upper_bound, iteration_count, iteration_data = false_position_method(f, lower_bound, upper_bound, tolerance, max_iterations)
+        xr_prev = xr
 
-    if iteration_count > 0:
-        print(tabulate(iteration_data, headers=["Iter", "lower_bound", "f(lower_bound)", "midpoint", "f(midpoint)", "upper_bound", "f(upper_bound)", "Error"], tablefmt="fancy_grid"))
-        print(f"\nRaiz encontrada en el intervalo [{lower_bound}, {upper_bound}] despues de {iteration_count} iteraciones.")
-    else:
-        print("\nNo se ha encontrado ninguna raíz dentro del intervalo y la tolerancia dados.")
+    # Resultado final
+    root = xr
+    f_root = f_xr
+    iterations = len(iteration_data)
+
+    return root, f_root, iterations, iteration_data

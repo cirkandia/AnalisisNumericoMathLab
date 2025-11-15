@@ -1,60 +1,82 @@
-import math
-import sympy as sp
-import re
+def secante(
+    f,
+    x0,
+    x1,
+    tolerance,
+    max_iterations,
+    error_type="rel",   # 'abs', 'rel' o 'cond'
+    show_report=True,
+    eval_grid=500,
+    auto_compare=False
+):
+    """
+    Método de la Secante compatible con la GUI.
 
-def conversion(expr):
-    expr = re.sub(r'(?<!\w)e', 'E', expr)
-    expr = re.sub(r'\bln\b', 'log', expr)
-    expr = re.sub(r'\bsin\b', 'sin', expr)
-    expr = re.sub(r'\bcos\b', 'cos', expr)
-    sympy_expr = sp.sympify(expr)
-    converted_expr = str(sympy_expr).replace('E', 'math.exp(1)')
-    converted_expr = converted_expr.replace('exp(', 'math.exp(')
-    converted_expr = converted_expr.replace('log(', 'math.log(')
-    converted_expr = converted_expr.replace('sin(', 'math.sin(')
-    converted_expr = converted_expr.replace('cos(', 'math.cos(')
-    return converted_expr
+    Parámetros:
+        f             : función f(x), ya construida por la interfaz.
+        x0, x1        : valores iniciales.
+        tolerance     : tolerancia (float).
+        max_iterations: máximo de iteraciones (int).
+        error_type    : 'abs', 'rel' o 'cond'.
+        show_report, eval_grid, auto_compare: ignorados, solo para compatibilidad.
 
-def secante(function_str, x0, x1, tolerance, max_iterations):
-    f_str = conversion(function_str)
+    Devuelve:
+        (raiz, f(raiz), iteraciones, tabla)
 
-    def evaluate_expression(x):
-        return eval(f_str)
+    Tabla (por fila):
+        [ iter, x_{i-1}, x_i, f(x_i), error ]
+    """
 
-    previous_x = x0
-    current_x = x1
-    previous_f = evaluate_expression(previous_x)
-    current_f = evaluate_expression(current_x)
-    iteration_number = 0
-    results_matrix = []
-    absolute_error = "-"
-    relative_error = "-"
+    # Aseguramos tipos numéricos
+    x_prev = float(x0)
+    x_curr = float(x1)
 
-    results_matrix.append([iteration_number, previous_x, previous_f, absolute_error, relative_error])
-    iteration_number = 1
-    results_matrix.append([iteration_number, current_x, current_f, absolute_error, relative_error])
+    f_prev = f(x_prev)
+    f_curr = f(x_curr)
 
-    while iteration_number <= max_iterations:
-        denominator = current_f - previous_f
-        if denominator == 0:
-            raise ZeroDivisionError("División por cero en el denominador de la fórmula secante.")
+    iteration_data = []
 
-        next_x = current_x - current_f * (current_x - previous_x) / denominator
-        next_f = evaluate_expression(next_x)
-
-        absolute_error = abs(next_x - current_x)
-        relative_error = abs(next_x - current_x) / abs(next_x) if next_x != 0 else float('inf')
-
-        results_matrix.append([iteration_number + 1, next_x, next_f, absolute_error, relative_error])
-
-        if absolute_error < tolerance:
+    for k in range(int(max_iterations)):
+        # Evitar división por cero en la fórmula de la secante
+        denom = (f_curr - f_prev)
+        if denom == 0:
+            # Guardamos fila con error infinito y salimos
+            error = float("inf")
+            iteration_data.append([k, x_prev, x_curr, f_curr, error])
             break
 
-        previous_x = current_x
-        current_x = next_x
-        previous_f = current_f
-        current_f = next_f
+        x_next = x_curr - f_curr * (x_curr - x_prev) / denom
+        f_next = f(x_next)
 
-        iteration_number += 1
+        # Cálculo del error según el tipo
+        if error_type == "abs":
+            error = abs(x_next - x_curr)
+        elif error_type == "rel":
+            if x_next != 0:
+                error = abs((x_next - x_curr) / x_next)
+            else:
+                error = abs(x_next - x_curr)
+        elif error_type == "cond":
+            # Por ejemplo, basándonos en el residuo |f(x_i)|
+            error = abs(f_curr)
+        else:
+            error = abs(x_next - x_curr)
 
-    return results_matrix
+        # Fila con formato esperado por la GUI:
+        # [iter, x_{i-1}, x_i, f(x_i), error]
+        iteration_data.append([k, x_prev, x_curr, f_curr, error])
+
+        if error < tolerance:
+            x_curr = x_next
+            f_curr = f_next
+            break
+
+        # Avanzar los valores
+        x_prev, x_curr = x_curr, x_next
+        f_prev, f_curr = f_curr, f_next
+
+    root = x_curr
+    f_root = f(root)
+    iterations = len(iteration_data)
+
+    return root, f_root, iterations, iteration_data

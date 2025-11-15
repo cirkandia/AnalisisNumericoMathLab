@@ -1,69 +1,70 @@
-from tabulate import tabulate
 import numpy as np
-import math
 
-def fixed_point_iteration(g, x0, tolerance, max_iterations, error_type="abs"):
+def fixed_point_iteration(
+    f,
+    x0,
+    tolerance,
+    max_iterations,
+    error_type="rel",   # 'abs', 'rel' o 'cond'
+    show_report=True,
+    eval_grid=500,
+    auto_compare=False
+):
     """
-    Encuentra la raíz de una función g utilizando el método de iteración de punto fijo.
+    Iteración de punto fijo compatible con la GUI.
 
-    Args:
-        g (función): La función para encontrar el punto fijo de.
-        x0 (float): La estimación inicial.
-        tolerance (float): La tolerancia para la raíz.
-        max_iteraciones (int): El número máximo de iteraciones.
-        tipo_error (str): El tipo de error a utilizar («abs» para absoluto, «rel» para relativo).
+    f             : función g(x); la GUI la construye a partir de la cadena ingresada.
+    x0            : valor inicial.
+    tolerance     : tolerancia.
+    max_iterations: máximo de iteraciones.
+    error_type    : 'abs', 'rel' o 'cond'.
+    show_report, eval_grid, auto_compare: ignorados (compatibilidad).
 
     Devuelve:
-        tupla: Una tupla que contiene el valor final de x, el valor de g(x), el número de iteraciones y la matriz de iteraciones.
+        (x*, g(x*), iteraciones, tabla)
+
+    Tabla (por fila):
+        [ iter, x_n, g(x_n), error ]
     """
-    
-    x_current = x0
-    iteration_count = 0
+
+    x_current = float(x0)
     iteration_data = []
 
-    while iteration_count < max_iterations:
-        x_next = eval(g, {"x": x_current, "np": np, "math": math})
-        
+    for k in range(int(max_iterations)):
+        g_current = f(x_current)   # aquí f es realmente g(x)
+
+        # Protegemos contra overflows / NaN
+        if not np.isfinite(g_current):
+            raise ValueError(
+                "La iteración de punto fijo generó un valor no finito "
+                "(overflow o NaN). Revisa g(x) o el valor inicial."
+            )
+
+        x_next = g_current
+
+        # Cálculo del error según el tipo
         if error_type == "abs":
             error = abs(x_next - x_current)
         elif error_type == "rel":
             if x_next != 0:
                 error = abs((x_next - x_current) / x_next)
             else:
-                print("Error: División por 0 en el cálculo del error relativo.")
-                return x_current, g(x_current), iteration_count, iteration_data
+                error = abs(x_next - x_current)
+        elif error_type == "cond":
+            error = abs(x_next - x_current)  # por ejemplo, residuo de x = g(x)
         else:
-            raise ValueError("Tipo de error no válido. Usa 'abs' o 'rel'.")
+            error = abs(x_next - x_current)
 
-        iteration_data.append([iteration_count, x_current, eval(g, {"x": x_current, "np": np, "math": math}), error])
+        iteration_data.append([k, x_current, g_current, error])
 
         if error < tolerance:
-            return x_next, eval(g, {"x": x_next, "np": np, "math": math}), iteration_count + 1, iteration_data
+            x_current = x_next
+            break
 
         x_current = x_next
-        iteration_count += 1
 
-    return x_current, g(x_current), iteration_count, iteration_data
+    root = x_current
+    g_root = f(root)
+    iterations = len(iteration_data)
 
-# --- Bloque de pruebas por consola ---
-if __name__ == '__main__':
-    function_str = input("Ingresa la función g(x) (e.g., math.exp(-x)): ")
-    x0 = float(input("Ingresa la estimación inicial x0: "))
-    tolerance = float(input("Ingresa la tolerancia: "))
-    max_iterations = int(input("Ingresa el número máximo de iteraciones: "))
-    error_type = input("Ingresa el tipo de error ('abs' para absoluto, 'rel' para relativo): ")
-
-    if tolerance <= 0 or max_iterations <= 0:
-        print("Error: La tolerancia y el número de iteraciones deben ser positivos.")
-        exit()
-
-    try:
-        x, gx, iteration_count, iteration_data = fixed_point_iteration(function_str, x0, tolerance, max_iterations, error_type)
-
-        if iteration_count > 0:
-            print(tabulate(iteration_data, headers=["Iteración", "x_actual", "g(x_actual)", "Error"], tablefmt="fancy_grid"))
-            print(f"\nPunto fijo encontrado: x = {x}, g(x) = {gx} después de {iteration_count} iteraciones.")
-        else:
-            print("No se encontró ningún punto fijo dentro de los límites dados.")
-    except Exception as e:
-        print(f"Ocurrió un error: {e}")
+    return root, g_root, iterations, iteration_data

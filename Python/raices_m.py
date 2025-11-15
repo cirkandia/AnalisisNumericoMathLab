@@ -1,72 +1,88 @@
-from tabulate import tabulate
-import math
-import sympy as sp
-import re
+import numpy as np
 
+def multiple_roots(
+    f,
+    x0,
+    tolerance,
+    max_iterations,
+    error_type="rel",   # 'abs', 'rel' o 'cond'
+    show_report=True,
+    eval_grid=500,
+    auto_compare=False
+):
+    """
+    Método de raíces múltiples compatible con la GUI.
 
-def conversion(expr):
-    expr = re.sub(r'(?<!\w)e', 'E', expr)
-    expr = re.sub(r'\bln\b', 'log', expr)
-    expr = re.sub(r'\bsin\b', 'sin', expr)
-    expr = re.sub(r'\bcos\b', 'cos', expr)
-    sympy_expr = sp.sympify(expr)
-    converted_expr = str(sympy_expr).replace('E', 'math.exp(1)')
-    converted_expr = converted_expr.replace('exp(', 'math.exp(')
-    converted_expr = converted_expr.replace('log(', 'math.log(')
-    converted_expr = converted_expr.replace('sin(', 'math.sin(')
-    converted_expr = converted_expr.replace('cos(', 'math.cos(')
+    Parámetros:
+        f             : función f(x) con raíz múltiple.
+        x0            : valor inicial.
+        tolerance     : tolerancia.
+        max_iterations: máximo de iteraciones.
+        error_type    : 'abs', 'rel' o 'cond'.
+        show_report, eval_grid, auto_compare: ignorados (compatibilidad).
 
-    return converted_expr
+    Devuelve:
+        (raiz, f(raiz), iteraciones, tabla)
 
-def multiple_roots(function_str, derivative_1_str, derivative_2_str, initial_guess, tolerance, max_iterations, error_type):
-    
-    function_str = conversion(function_str)
-    derivative_1_str = conversion(derivative_1_str)
-    derivative_2_str = conversion(derivative_2_str)
-    
-    def evaluate_function(x):
-        return eval(function_str)
-    def evaluate_derivative_1(x):
-        return eval(derivative_1_str)
-    def evaluate_derivative_2(x):
-        return eval(derivative_2_str)
-    
-    previous_root = initial_guess
-    previous_function_value = evaluate_function(previous_root)
-    iteration_count = 0
-    results_matrix = []
+    Tabla (por fila):
+        [iter, x_n, f(x_n), f'(x_n), f''(x_n), error]
+    """
 
-    while True:
+    # Derivada numérica primera
+    def df(x):
+        h = 1e-6
+        return (f(x + h) - f(x - h)) / (2.0 * h)
 
-        derivative_1_value = evaluate_derivative_1(previous_root)
-        derivative_2_value = evaluate_derivative_2(previous_root)
-        
-        denominator = (derivative_1_value)**2 - previous_function_value * derivative_2_value
-        if denominator == 0:
-            print("Error: División por 0")
+    # Derivada numérica segunda
+    def d2f(x):
+        h = 1e-4
+        return (f(x + h) - 2.0 * f(x) + f(x - h)) / (h ** 2)
+
+    x_current = float(x0)
+    iteration_data = []
+
+    for k in range(int(max_iterations)):
+        f_val = f(x_current)
+        df_val = df(x_current)
+        d2f_val = d2f(x_current)
+
+        # Denominador de la fórmula de raíces múltiples:
+        # x_{n+1} = x_n - f f' / ( (f')^2 - f f'' )
+        denom = df_val ** 2 - f_val * d2f_val
+        if denom == 0:
+            # Guardamos fila con error infinito y salimos
+            error = float("inf")
+            iteration_data.append([k, x_current, f_val, df_val, d2f_val, error])
             break
-        
-        current_root = previous_root - previous_function_value * derivative_1_value / denominator
-        absolute_error=abs(current_root-previous_root)
-        relative_error=absolute_error/current_root
-        current_function_value = evaluate_function(current_root)
-        
-        if error_type=="rela":
-            if previous_root != 0:
-                error = absolute_error/current_root
+
+        x_next = x_current - f_val * df_val / denom
+
+        # Cálculo del error según el tipo
+        if error_type == "abs":
+            error = abs(x_next - x_current)
+        elif error_type == "rel":
+            if x_next != 0:
+                error = abs((x_next - x_current) / x_next)
             else:
-                print("Error: División por 0")
-                error = float('inf')
-                relative_error = float('inf')
-        
+                error = abs(x_next - x_current)
+        elif error_type == "cond":
+            # por ejemplo, residuo |f(x_n)|
+            error = abs(f_val)
         else:
-            error = absolute_error
+            error = abs(x_next - x_current)
 
-        results_matrix.append([iteration_count, previous_root, previous_function_value, derivative_1_value, derivative_2_value, absolute_error, relative_error])
-        previous_root = current_root
-        previous_function_value = current_function_value
-        iteration_count += 1
-        if error < tolerance or iteration_count >= max_iterations:
+        # Fila con el formato que espera la GUI:
+        # [iter, x_n, f(x_n), f'(x_n), f''(x_n), error]
+        iteration_data.append([k, x_current, f_val, df_val, d2f_val, error])
+
+        if error < tolerance:
+            x_current = x_next
             break
 
-    return results_matrix
+        x_current = x_next
+
+    root = x_current
+    f_root = f(root)
+    iterations = len(iteration_data)
+
+    return root, f_root, iterations, iteration_data
