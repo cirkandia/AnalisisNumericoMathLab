@@ -1,0 +1,110 @@
+# Análisis Numérico – Métodos Computacionales (Interfaz Gráfica)
+
+Este proyecto es una aplicación de escritorio en **Python** con interfaz gráfica en **Tkinter** que integra los principales métodos de **análisis numérico** vistos en el curso, organizados por capítulos:
+
+- **Capítulo 1:** Métodos de búsqueda de raíces.
+- **Capítulo 2:** Métodos iterativos para sistemas de ecuaciones lineales.
+- **Capítulo 3:** Métodos de interpolación.
+
+La aplicación permite:
+- Ingresar datos de forma guiada.
+- Ver tablas de resultados en la interfaz.
+- Graficar funciones y aproximaciones (en algunos métodos).
+- Generar informes y comparar métodos según diferentes tipos de error.
+
+---
+
+## 👥 Integrantes
+
+- Johan E Mesa V – cirkandia
+- Onofre Benjumea – OnofreB22
+- Sebastian Vasquez S – Svasquezs1
+
+---
+
+## 📚 Descripción por capítulos
+
+### 🔹 Capítulo 1 – Ecuaciones No Lineales
+
+Métodos implementados:
+
+- **Bisección**
+- **Regla Falsa**
+- **Punto Fijo**
+- **Newton**
+- **Secante**
+- **Raíces Múltiples** (una de raíces múltiples)
+
+Funcionalidades:
+
+- Ingreso de:
+  - Función `f(x)` (y/o `g(x)` en punto fijo).
+  - Intervalos o valores iniciales.
+  - Tolerancia.
+  - Número máximo de iteraciones.
+- Muestra:
+  - **Tabla de iteraciones** en la interfaz.
+  - **Gráfica de la función y aproximaciones** (para métodos de raíces seleccionados).
+- Apoyo al usuario:
+  - Ejemplos de funciones.
+  - Explicación de cómo ingresar `f(x)` en sintaxis de Python (`x**2 - 2`, `np.sin(x)`, etc.).
+- Informes:
+  - Informe de ejecución y comparación entre métodos para un error específico:
+    - Error **relativo**, **absoluto** o **de condición**.
+  - Identificación del **mejor método** según el criterio seleccionado.
+  - El informe puede activarse o no según la elección del usuario.
+
+---
+
+### 🔹 Capítulo 2 – Sistemas de Ecuaciones Lineales
+
+Métodos implementados:
+
+- **Jacobi**
+- **Gauss-Seidel**
+- **SOR** (Successive Over-Relaxation)
+
+Funcionalidades:
+
+- Ingreso de:
+  - Matriz **A** (hasta tamaño **7×7**, filas separadas por `;` y columnas por `,`).
+  - Vector **b**.
+  - Vector inicial `x0`.
+  - Tolerancia y número máximo de iteraciones.
+  - Factor de relajación `w` (en SOR).
+- Muestra:
+  - Tabla de iteraciones en la interfaz.
+  - **Radio espectral** y verificación de convergencia.
+  - Mensaje indicando si el método **puede o no converger**.
+- Informes:
+  - Informe de ejecución y comparación entre Jacobi, Gauss-Seidel y SOR.
+  - Comparación según diferentes errores.
+  - Identificación del mejor método.
+
+---
+
+### 🔹 Capítulo 3 – Interpolación
+
+Métodos implementados:
+
+- **Vandermonde**
+- **Newton Interpolante**
+- **Lagrange**
+- **Spline Lineal**
+- **Spline Cúbico**
+
+Funcionalidades:
+
+- Ingreso de:
+  - Puntos `x` y `y` (hasta **8 datos**).
+- Muestra:
+  - Polinomio de interpolación (o polinomios por tramo).
+  - Posibilidad de ver los polinomios completos en una ventana modal.
+  - Gráfica de la interpolación (según implementación de los módulos).
+- Informes:
+  - Comparación entre métodos en términos de errores.
+  - Identificación del mejor método para el problema dado.
+- Ayuda:
+  - Explicación de cómo ingresar los datos (`x1,x2,x3,...`, `y1,y2,y3,...`).
+
+---
