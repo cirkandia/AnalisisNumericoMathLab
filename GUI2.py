@@ -127,13 +127,16 @@ METHODS = {
         # Descripción corta, general
         "description": (
             "El método de Newton (o Newton-Raphson) es un procedimiento iterativo para encontrar raíces de la ecuación "
-            "f(x) = 0 utilizando información de la derivada de la función."
+            "f(x) = 0 utilizando información de la derivada de la función. "
+            "En ESTA APLICACIÓN la derivada f'(x) se calcula automáticamente de forma numérica a partir de la f(x) "
+            "que escribas, por lo que NO necesitas ingresar la derivada de manera explícita."
         ),
         # Para qué sirve
         "purpose": (
             "Se utiliza para obtener aproximaciones rápidas de raíces reales cuando se dispone de una buena estimación "
             "inicial y la función es derivable cerca de la raíz. Es uno de los métodos más rápidos en converger, "
-            "aunque requiere más cuidado en la elección del valor inicial."
+            "aunque requiere más cuidado en la elección del valor inicial. "
+            "En esta implementación basta con que escribas f(x); el programa se encarga de aproximar f'(x)."
         ),
         # Cómo funciona
         "how_it_works": (
@@ -144,7 +147,9 @@ METHODS = {
             "el punto donde esa recta corta al eje x.\n"
             "4. El proceso se repite hasta que el cambio entre dos aproximaciones consecutivas sea menor que la "
             "tolerancia o se alcance el máximo número de iteraciones.\n"
-            "5. Si la derivada f'(x_n) es muy pequeña o cero, el método puede fallar o volverse inestable."
+            "5. Si la derivada f'(x_n) es muy pequeña o cero, el método puede fallar o volverse inestable.\n\n"
+            "En esta aplicación, f'(x_n) NO se pide al usuario: se aproxima numéricamente a partir de la función "
+            "f(x) que se ingresa en la caja de texto. De esta forma, no necesitas calcular derivadas a mano."
         ),
         # Datos requeridos
         "required_inputs": [
@@ -156,10 +161,12 @@ METHODS = {
         # Qué verá el usuario en la GUI
         "ui_info": (
             "En la interfaz podrás ver:\n"
-            "• Una tabla de iteraciones con los valores de x_n, f(x_n), f'(x_n) y el error en cada paso.\n"
+            "• Una tabla de iteraciones con los valores de x_n, f(x_n), una aproximación numérica de f'(x_n) y el "
+            "error en cada paso.\n"
             "• La aproximación final de la raíz obtenida, junto con el error final y el número de iteraciones usadas.\n"
             "• Si utilizas la opción de graficar, verás la función f(x) y los puntos x_n sobre la curva, lo que permite "
-            "observar cómo el método se mueve siguiendo las tangentes hacia la raíz."
+            "observar cómo el método se mueve siguiendo las tangentes hacia la raíz.\n\n"
+            "IMPORTANTE: la derivada se calcula automáticamente; solo debes escribir f(x)."
         ),
         # Ejemplo
         "example": (
@@ -169,7 +176,7 @@ METHODS = {
             "• Tol = 1e-5\n"
             "• it = 50\n\n"
             "En este caso, el método de Newton encontrará una aproximación de la raíz de f(x) = 0, que corresponde a √2, "
-            "partiendo de la estimación inicial x0 = 1.5."
+            "partiendo de la estimación inicial x0 = 1.5. La derivada f'(x) se aproxima automáticamente."
         )
     },
 
@@ -282,13 +289,16 @@ METHODS = {
         # Descripción corta, general
         "description": (
             "El método de raíces múltiples es una variante del método de Newton diseñada para encontrar raíces de "
-            "multiplicidad mayor que 1, utilizando información de la primera y la segunda derivada de la función."
+            "multiplicidad mayor que 1, utilizando información de la primera y la segunda derivada de la función. "
+            "En ESTA APLICACIÓN tanto f'(x) como f''(x) se calculan automáticamente de forma numérica a partir de f(x), "
+            "por lo que NO necesitas escribir las derivadas."
         ),
         # Para qué sirve
         "purpose": (
             "Se utiliza cuando la función tiene raíces múltiples (por ejemplo, cuando f(x) = (x - r)^m con m > 1). "
             "En estos casos, el método de Newton estándar puede converger muy lentamente o comportarse mal, "
-            "mientras que el método de raíces múltiples mejora la convergencia utilizando f(x), f'(x) y f''(x)."
+            "mientras que el método de raíces múltiples mejora la convergencia utilizando f(x), f'(x) y f''(x). "
+            "En esta implementación, solo debes ingresar f(x); el programa aproxima f'(x) y f''(x) automáticamente."
         ),
         # Cómo funciona
         "how_it_works": (
@@ -298,7 +308,10 @@ METHODS = {
             "3. Esta fórmula tiene en cuenta la multiplicidad de la raíz al incorporar f'(x) y f''(x).\n"
             "4. Se repite el proceso hasta que el cambio entre dos aproximaciones consecutivas sea menor que la "
             "tolerancia o se alcance el máximo número de iteraciones.\n"
-            "5. Es importante que la función sea suficientemente suave (derivable dos veces) en torno a la raíz."
+            "5. Es importante que la función sea suficientemente suave (derivable dos veces) en torno a la raíz.\n\n"
+            "En esta aplicación NO se te pide escribir f'(x) ni f''(x): ambas derivadas se aproximan numéricamente "
+            "a partir de la función f(x) que ingresas, cumpliendo el requisito de ayudar al usuario con el cálculo "
+            "de derivadas."
         ),
         # Datos requeridos
         "required_inputs": [
@@ -310,10 +323,12 @@ METHODS = {
         # Qué verá el usuario en la GUI
         "ui_info": (
             "En la interfaz podrás ver:\n"
-            "• Una tabla de iteraciones con los valores de x_n, f(x_n), f'(x_n), f''(x_n) y el error.\n"
+            "• Una tabla de iteraciones con los valores de x_n, f(x_n), una aproximación numérica de f'(x_n), "
+            "otra de f''(x_n) y el error.\n"
             "• La aproximación final de la raíz múltiple y el número de iteraciones utilizadas.\n"
             "• Si utilizas la opción de graficar, podrás ver la función f(x) y cómo las aproximaciones x_n se "
-            "acercan a la raíz donde la curva 'toca' el eje x con multiplicidad mayor que 1."
+            "acercan a la raíz donde la curva 'toca' el eje x con multiplicidad mayor que 1.\n\n"
+            "IMPORTANTE: las derivadas f'(x) y f''(x) se calculan automáticamente; tú solo escribes f(x)."
         ),
         # Ejemplo
         "example": (
@@ -323,7 +338,8 @@ METHODS = {
             "• Tol = 1e-6\n"
             "• it = 50\n\n"
             "En este caso, la función tiene una raíz múltiple en x = 1. El método de raíces múltiples utilizará "
-            "f(x), f'(x) y f''(x) para aproximar eficientemente esa raíz."
+            "aproximaciones numéricas de f'(x) y f''(x) para aproximar eficientemente esa raíz, sin que tengas que "
+            "calcular derivadas de forma manual."
         )
     },
 
