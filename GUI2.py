@@ -1430,13 +1430,6 @@ class App(tk.Tk):
             messagebox.showerror("Error", "No hay datos de iteraciones para graficar.")
             return
 
-        # Ajusta estos índices según la forma de tus tablas:
-        # Bisección: [iter, a, f(a), pm, f(pm), b, f(b), err]          -> x_n = pm (3)
-        # Regla Falsa: [iter, a, f(a), b, f(b), xr, f(xr), err]       -> x_n = xr (5)
-        # Newton: [iter, x, f(x), f'(x), err]                         -> x_n = x  (1)
-        # Secante: [iter, x_{i-1}, x_i, f(x_i), err]                  -> x_n = x_i (2)
-        # Punto Fijo: [iter, x, g(x), err]                            -> x_n = x  (1)
-        # Raíces Múltiples: [iter, x, f, f', f'', err]                -> x_n = x  (1)
         x_col_map = {
             "Bisección": 3,
             "Regla Falsa": 5,
@@ -1453,15 +1446,16 @@ class App(tk.Tk):
         x_col = x_col_map[method_name]
 
         try:
-            x_aprox = [row[x_col] for row in table_data]
+            # CONVERSIÓN A FLOAT AQUÍ
+            x_aprox = [float(row[x_col]) for row in table_data]
         except Exception:
             messagebox.showerror("Error", "No se pudo extraer la columna de aproximaciones x_n.\nRevisa el formato de la tabla.")
             return
 
         # Intervalo para graficar
         if method_name in ["Bisección", "Regla Falsa"] and \
-           hasattr(self, 'last_a') and hasattr(self, 'last_b') and \
-           self.last_a is not None and self.last_b is not None:
+        hasattr(self, 'last_a') and hasattr(self, 'last_b') and \
+        self.last_a is not None and self.last_b is not None:
             a = self.last_a
             b = self.last_b
         else:
@@ -1488,7 +1482,7 @@ class App(tk.Tk):
 
         try:
             ax.scatter(x_aprox, [f(x) for x in x_aprox],
-                       color='red', marker='o', label='Aproximaciones x_n')
+                    color='red', marker='o', label='Aproximaciones x_n')
         except Exception:
             pass
 
@@ -1501,7 +1495,6 @@ class App(tk.Tk):
         canvas = FigureCanvasTkAgg(fig, master=win)
         canvas.draw()
         canvas.get_tk_widget().pack(fill='both', expand=True)
-
 
 if __name__ == "__main__":
     app = App()
