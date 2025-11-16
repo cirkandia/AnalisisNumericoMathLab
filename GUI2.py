@@ -345,51 +345,394 @@ METHODS = {
 
     "Jacobi": {
         "module": ("jacobi", "jacobi"),
-        "description": "Resuelve sistemas de ecuaciones lineales mediante iteración usando matriz diagonal.",
-        "required_inputs": ["Matriz A", "Vector b", "Vector inicial x0", "Tolerancia", "Máximo iteraciones"],
-        "example": "Sistema: 3x + y = 5, x + 2y = 4"
+        # Descripción corta, general
+        "description": (
+            "El método iterativo de Jacobi es una técnica para resolver sistemas de ecuaciones lineales "
+            "A·x = b, descomponiendo la matriz A y actualizando todas las componentes de x de forma simultánea "
+            "en cada iteración."
+        ),
+        # Para qué sirve
+        "purpose": (
+            "Se utiliza para aproximar la solución de sistemas lineales de tamaño mediano o grande cuando "
+            "la matriz A cumple ciertas condiciones de convergencia (por ejemplo, diagonal dominante) y se "
+            "prefiere un método iterativo en lugar de factorizaciones directas como Gauss."
+        ),
+        # Cómo funciona
+        "how_it_works": (
+            "1. Se separa A en su parte diagonal D y el resto R = A - D.\n"
+            "2. La ecuación A·x = b se reescribe como D·x = b - R·x.\n"
+            "3. En la iteración k+1, cada componente x_i se actualiza usando solo los valores x_j^{(k)} de la iteración anterior:\n"
+            "      x_i^{(k+1)} = (1 / a_ii) * (b_i - Σ_{j≠i} a_ij · x_j^{(k)}).\n"
+            "4. Se repite el proceso hasta que la norma del cambio entre dos iteraciones consecutivas sea "
+            "menor que la tolerancia o se alcance el máximo de iteraciones."
+        ),
+        # Datos requeridos
+        "required_inputs": [
+            "Matriz A (escrita como filas separadas por ';', por ejemplo: '4,1;2,3')",
+            "Vector b (separado por comas, por ejemplo: '5,4')",
+            "Vector inicial x0 (opcional, por defecto puede ser ceros; en la interfaz se escribe como '0,0')",
+            "Tolerancia (Tol), por ejemplo 1e-4",
+            "Máximo iteraciones (it), por ejemplo 50 o 100"
+        ],
+        # Qué verá el usuario en la GUI
+        "ui_info": (
+            "En la interfaz podrás ver:\n"
+            "• Una tabla con las iteraciones del vector x^{(k)} y el error asociado a cada paso.\n"
+            "• La aproximación final del vector solución x y el número de iteraciones usadas.\n"
+            "• Mensajes de advertencia si el método no converge dentro del número de iteraciones indicado."
+        ),
+        # Ejemplo
+        "example": (
+            "Ejemplo de uso (sistema 2x2):\n"
+            "Sistema: 3x + y = 5\n"
+            "         x + 2y = 4\n\n"
+            "En la interfaz puedes ingresar:\n"
+            "• Matriz A = '3,1;1,2'\n"
+            "• Vector b = '5,4'\n"
+            "• x0 = '0,0'\n"
+            "• Tol = 1e-4\n"
+            "• it = 50\n\n"
+            "El método de Jacobi aproximará la solución (x, y) que satisface el sistema."
+        )
     },
+
     "Gauss-Seidel": {
         "module": ("gauss_seidel", "gauss_seidel_method"),
-        "description": "Mejora del método Jacobi, usa valores actualizados inmediatamente.",
-        "required_inputs": ["Matriz A", "Vector b", "Vector inicial x0", "Tolerancia", "Máximo iteraciones"],
-        "example": "Sistema: 4x + y = 7, x + 3y = 8"
+        # Descripción corta, general
+        "description": (
+            "El método de Gauss-Seidel es una mejora del método de Jacobi para resolver sistemas lineales A·x = b, "
+            "donde las componentes de x se actualizan secuencialmente usando de inmediato los nuevos valores calculados."
+        ),
+        # Para qué sirve
+        "purpose": (
+            "Se utiliza para resolver sistemas lineales cuando se desea una convergencia más rápida que Jacobi "
+            "y la matriz A cumple condiciones favorables (como diagonal dominante). Suele requerir menos iteraciones "
+            "que Jacobi para alcanzar la misma precisión."
+        ),
+        # Cómo funciona
+        "how_it_works": (
+            "1. Se separa A en su parte estrictamente inferior L, diagonal D y estrictamente superior U.\n"
+            "2. La ecuación A·x = b se reescribe de forma adecuada para usar los nuevos valores a medida que se calculan.\n"
+            "3. En la iteración k+1, cada componente x_i se actualiza usando ya las x_j^{(k+1)} recién calculadas para j < i "
+            "y las x_j^{(k)} antiguas para j > i:\n"
+            "      x_i^{(k+1)} = (1 / a_ii) * (b_i - Σ_{j<i} a_ij · x_j^{(k+1)} - Σ_{j>i} a_ij · x_j^{(k)}).\n"
+            "4. Se repite el proceso hasta que el error entre iteraciones sea menor que la tolerancia o se alcance "
+            "el máximo número de iteraciones."
+        ),
+        # Datos requeridos
+        "required_inputs": [
+            "Matriz A (filas separadas por ';')",
+            "Vector b (separado por comas)",
+            "Vector inicial x0",
+            "Tolerancia (Tol)",
+            "Máximo iteraciones (it)"
+        ],
+        # Qué verá el usuario en la GUI
+        "ui_info": (
+            "En la interfaz podrás ver:\n"
+            "• Una tabla con los vectores x^{(k)} aproximados en cada iteración y el error correspondiente.\n"
+            "• La solución aproximada del sistema al finalizar.\n"
+            "• En muchos casos, notarás que Gauss-Seidel necesita menos iteraciones que Jacobi para un mismo sistema."
+        ),
+        # Ejemplo
+        "example": (
+            "Ejemplo de uso:\n"
+            "Sistema: 4x + y = 7\n"
+            "         x + 3y = 8\n\n"
+            "En la interfaz puedes ingresar:\n"
+            "• Matriz A = '4,1;1,3'\n"
+            "• Vector b = '7,8'\n"
+            "• x0 = '0,0'\n"
+            "• Tol = 1e-4\n"
+            "• it = 50\n\n"
+            "El método de Gauss-Seidel aproximará la solución del sistema usando los valores actualizados en cada paso."
+        )
     },
+
     "SOR": {
         "module": ("SOR", "sor_method"),
-        "description": "Método de sobre-relajación sucesiva, generalización de Gauss-Seidel con factor w.",
-        "required_inputs": ["Matriz A", "Vector b", "Vector inicial x0", "Factor w", "Tolerancia", "Máximo iteraciones"],
-        "example": "Sistema con w = 1.2 para acelerar convergencia"
+        # Descripción corta, general
+        "description": (
+            "El método SOR (Successive Over-Relaxation) es una variante de Gauss-Seidel que introduce un factor de "
+            "relajación w para acelerar (o en algunos casos estabilizar) la convergencia del método."
+        ),
+        # Para qué sirve
+        "purpose": (
+            "Se utiliza para resolver sistemas lineales A·x = b cuando se desea mejorar la velocidad de convergencia "
+            "respecto a Gauss-Seidel. Con una buena elección de w (entre 0 y 2), se pueden reducir significativamente "
+            "las iteraciones necesarias."
+        ),
+        # Cómo funciona
+        "how_it_works": (
+            "1. Parte de la idea de Gauss-Seidel pero corrige la actualización con un factor w.\n"
+            "2. Para cada componente x_i, primero se calcula la actualización tipo Gauss-Seidel (x_i^{GS}).\n"
+            "3. Luego se combina con el valor anterior x_i^{(k)} para obtener:\n"
+            "      x_i^{(k+1)} = (1 - w) · x_i^{(k)} + w · x_i^{GS}.\n"
+            "4. Si 0 < w < 1 se habla de sub-relajación (puede ayudar cuando el método tiende a oscilar).\n"
+            "   Si 1 < w < 2 se habla de sobre-relajación (busca acelerar la convergencia).\n"
+            "5. Se repite hasta que el error sea menor que la tolerancia o se alcance el máximo de iteraciones."
+        ),
+        # Datos requeridos
+        "required_inputs": [
+            "Matriz A",
+            "Vector b",
+            "Vector inicial x0",
+            "Factor w (por ejemplo 1.1, 1.2, etc.)",
+            "Tolerancia (Tol)",
+            "Máximo iteraciones (it)"
+        ],
+        # Qué verá el usuario en la GUI
+        "ui_info": (
+            "En la interfaz podrás ver:\n"
+            "• Una tabla con las iteraciones del vector x y el error asociado.\n"
+            "• El valor final aproximado de la solución.\n"
+            "• Podrás experimentar cambiando w para ver cómo afecta el número de iteraciones y la convergencia."
+        ),
+        # Ejemplo
+        "example": (
+            "Ejemplo de uso:\n"
+            "Supongamos el mismo sistema resuelto con Gauss-Seidel, pero ahora usando SOR con w = 1.2.\n"
+            "• Matriz A = '4,1;1,3'\n"
+            "• Vector b = '7,8'\n"
+            "• x0 = '0,0'\n"
+            "• w = 1.2\n"
+            "• Tol = 1e-4\n"
+            "• it = 50\n\n"
+            "La idea es comparar cuántas iteraciones requiere SOR frente a Gauss-Seidel para lograr la misma precisión."
+        )
     },
+
     "Vandermonde": {
         "module": ("Vandermonde", "interpolacion_vandermonde"),
-        "description": "Interpolación polinomial usando matriz de Vandermonde.",
-        "required_inputs": ["ValoresX", "ValoresY"],
-        "example": "X: 1,2,3 \n Y: 2,4,5 \n dando (1,2), (2,4), (3,5) como puntos de interpolación"
+        # Descripción corta, general
+        "description": (
+            "La interpolación con matriz de Vandermonde construye un polinomio p(x) de grado n-1 que pasa exactamente "
+            "por n puntos dados, resolviendo un sistema lineal con una matriz de tipo Vandermonde."
+        ),
+        # Para qué sirve
+        "purpose": (
+            "Se utiliza para encontrar el polinomio interpolante que ajusta exactamente un conjunto de puntos (x_i, y_i). "
+            "Es útil para aproximar funciones conocidas solo en ciertos puntos, aunque no siempre es el método más "
+            "estable para muchos puntos."
+        ),
+        # Cómo funciona
+        "how_it_works": (
+            "1. Dado un conjunto de n puntos (x_0, y_0), ..., (x_{n-1}, y_{n-1}), se construye la matriz de Vandermonde V:\n"
+            "      V[i,j] = x_i^j  para i,j = 0,...,n-1.\n"
+            "2. Se plantea el sistema V·a = y, donde a = (a_0, a_1, ..., a_{n-1}) son los coeficientes del polinomio.\n"
+            "3. Se resuelve el sistema para obtener los coeficientes a_j.\n"
+            "4. El polinomio interpolante es:\n"
+            "      p(x) = a_0 + a_1 x + a_2 x^2 + ... + a_{n-1} x^{n-1}.\n"
+            "5. Con este polinomio se pueden evaluar valores intermedios y graficar la curva interpolante."
+        ),
+        # Datos requeridos
+        "required_inputs": [
+            "Valores X (puntos x, separados por comas, por ejemplo: '1,2,3')",
+            "Valores Y (puntos y, separados por comas, por ejemplo: '2,4,5')"
+        ],
+        # Qué verá el usuario en la GUI
+        "ui_info": (
+            "En la interfaz podrás ver:\n"
+            "• La tabla de los puntos utilizados para la interpolación.\n"
+            "• La matriz de Vandermonde y/o el polinomio resultante (dependiendo de la implementación).\n"
+            "• Una opción para ver el polinomio completo en una ventana aparte.\n"
+            "• Posiblemente la gráfica de los puntos originales y la curva del polinomio interpolante."
+        ),
+        # Ejemplo
+        "example": (
+            "Ejemplo de uso:\n"
+            "Puntos: (1,2), (2,4), (3,5)\n\n"
+            "En la interfaz:\n"
+            "• X = '1,2,3'\n"
+            "• Y = '2,4,5'\n\n"
+            "El método construirá el polinomio p(x) que pasa exactamente por esos tres puntos, mostrando sus coeficientes."
+        )
     },
+
     "Interpolación Newton": {
         "module": ("interpolacion_newton", "interpolacion_newton"),
-        "description": "Interpolación usando diferencias divididas de Newton.",
-        "required_inputs": ["Puntos x", "Valores y", "Punto a evaluar"],
-        "example": "X: 1,2,3 \n Y: 2,4,5 \n dando (1,2), (2,4), (3,5) como puntos de interpolación"
+        # Descripción corta, general
+        "description": (
+            "La interpolación de Newton usa diferencias divididas para construir un polinomio interpolante de forma "
+            "progresiva, permitiendo agregar puntos con relativa facilidad."
+        ),
+        # Para qué sirve
+        "purpose": (
+            "Se utiliza para interpolar datos mediante un polinomio y es especialmente útil cuando se agregan "
+            "nuevos puntos, ya que permite reutilizar las diferencias divididas ya calculadas."
+        ),
+        # Cómo funciona
+        "how_it_works": (
+            "1. Dado un conjunto de puntos (x_0, y_0), ..., (x_n, y_n), se construye la tabla de diferencias divididas.\n"
+            "2. Las diferencias divididas f[x_i], f[x_i, x_{i+1}], f[x_i, x_{i+1}, x_{i+2}], ... se van calculando "
+            "recursivamente.\n"
+            "3. El polinomio de Newton tiene la forma:\n"
+            "      P(x) = f[x_0] + f[x_0,x_1](x - x_0) + f[x_0,x_1,x_2](x - x_0)(x - x_1) + ...\n"
+            "4. Una vez obtenidos los coeficientes (diferencias divididas), se puede evaluar P(x) en cualquier punto.\n"
+            "5. La estructura incremental permite extender el polinomio cuando se añaden nuevos datos x_{n+1}, y_{n+1}."
+        ),
+        # Datos requeridos
+        "required_inputs": [
+            "Puntos x (separados por comas, por ejemplo: '1,2,3')",
+            "Valores y (separados por comas, por ejemplo: '2,4,5')",
+            "Punto a evaluar (un valor x donde se desea calcular P(x))"
+        ],
+        # Qué verá el usuario en la GUI
+        "ui_info": (
+            "En la interfaz podrás ver:\n"
+            "• Una tabla con las diferencias divididas.\n"
+            "• El polinomio de Newton (o sus coeficientes equivalentes).\n"
+            "• El valor aproximado P(x_eval) para el punto que indiques.\n"
+            "• Opcionalmente, la comparación con otros métodos de interpolación (mediante el botón de comparación)."
+        ),
+        # Ejemplo
+        "example": (
+            "Ejemplo de uso:\n"
+            "Puntos: (1,2), (2,4), (3,5)\n"
+            "Punto a evaluar: x = 2.5\n\n"
+            "En la interfaz:\n"
+            "• x = '1,2,3'\n"
+            "• y = '2,4,5'\n"
+            "• Punto a evaluar = '2.5'\n\n"
+            "El método calculará el polinomio de Newton y te dará una aproximación de P(2.5)."
+        )
     },
+
     "Spline Lineal": {
         "module": ("spline_lineal", "spline_lineal_con_polinomios"),
-        "description": "Interpolación lineal por tramos.",
-        "required_inputs": ["Puntos x", "Valores y"],
-        "example": "X: 1,2,3 \n Y: 2,4,5 \n dando (1,2), (2,4), (3,5) como puntos de interpolación"
+        # Descripción corta, general
+        "description": (
+            "La interpolación por spline lineal construye funciones lineales por tramos entre cada par de puntos "
+            "consecutivos, uniendo los puntos dados mediante segmentos rectos."
+        ),
+        # Para qué sirve
+        "purpose": (
+            "Se utiliza para interpolar datos de forma simple y estable, sin introducir oscilaciones fuertes, "
+            "siendo adecuada cuando se busca una aproximación continua pero no necesariamente suave en la derivada."
+        ),
+        # Cómo funciona
+        "how_it_works": (
+            "1. A partir de puntos ordenados (x_0, y_0), ..., (x_n, y_n), se define un polinomio lineal en cada intervalo [x_i, x_{i+1}].\n"
+            "2. En cada tramo, el polinomio es de la forma:\n"
+            "      S_i(x) = a_i x + b_i,\n"
+            "   determinado por las condiciones S_i(x_i) = y_i y S_i(x_{i+1}) = y_{i+1}.\n"
+            "3. Se obtienen así n funciones lineales que, juntas, forman el spline lineal.\n"
+            "4. La función resultante es continua, pero su derivada presenta saltos en los nodos x_i."
+        ),
+        # Datos requeridos
+        "required_inputs": [
+            "Puntos x (ordenados, separados por comas)",
+            "Valores y correspondientes a cada x (separados por comas)"
+        ],
+        # Qué verá el usuario en la GUI
+        "ui_info": (
+            "En la interfaz podrás ver:\n"
+            "• Los tramos lineales calculados (los polinomios por intervalo) en una ventana de detalle.\n"
+            "• La tabla con los puntos originales.\n"
+            "• Opcionalmente, la gráfica de los puntos y las rectas que los unen.\n"
+            "• La posibilidad de copiar los polinomios para usarlos en otro lado."
+        ),
+        # Ejemplo
+        "example": (
+            "Ejemplo de uso:\n"
+            "Puntos: (0,0), (1,1), (2,0)\n\n"
+            "En la interfaz:\n"
+            "• x = '0,1,2'\n"
+            "• y = '0,1,0'\n\n"
+            "El método construirá dos tramos lineales: uno entre x=0 y x=1, y otro entre x=1 y x=2, "
+            "que juntos forman el spline lineal."
+        )
     },
+
     "Spline Cúbico": {
         "module": ("spline_cubico", "spline_cubico"),
-        "description": "Interpolación cúbica por tramos.",
-        "required_inputs": ["Puntos x", "Valores y"],
-        "example": "X: 1,2,3 \n Y: 2,4,5 \n dando (1,2), (2,4), (3,5) como puntos de interpolación"
+        # Descripción corta, general
+        "description": (
+            "El spline cúbico interpolante construye polinomios cúbicos por tramos entre puntos consecutivos, "
+            "garantizando continuidad en la función, en la primera derivada y en la segunda derivada."
+        ),
+        # Para qué sirve
+        "purpose": (
+            "Se utiliza cuando se desea una interpolación suave, sin esquinas, adecuada para aproximar curvas "
+            "de forma visualmente agradable y con buenas propiedades numéricas."
+        ),
+        # Cómo funciona
+        "how_it_works": (
+            "1. A partir de puntos (x_0, y_0), ..., (x_n, y_n), se construyen n polinomios cúbicos S_i(x) en cada intervalo [x_i, x_{i+1}].\n"
+            "2. Cada S_i(x) cumple:\n"
+            "   • S_i(x_i) = y_i y S_i(x_{i+1}) = y_{i+1} (interpolación de datos).\n"
+            "   • Continuidad de la primera y segunda derivada en los nodos internos.\n"
+            "3. Estas condiciones llevan a un sistema lineal para las segundas derivadas (o coeficientes), que se resuelve.\n"
+            "4. Dependiendo del tipo de spline (natural, con condiciones en los extremos, etc.), se imponen condiciones "
+            "adicionales en los extremos, como S''(x_0) = 0 y S''(x_n) = 0 en el spline natural."
+        ),
+        # Datos requeridos
+        "required_inputs": [
+            "Puntos x (ordenados, separados por comas)",
+            "Valores y (separados por comas)"
+        ],
+        # Qué verá el usuario en la GUI
+        "ui_info": (
+            "En la interfaz podrás ver:\n"
+            "• Los polinomios cúbicos por cada tramo en una ventana de detalle.\n"
+            "• La tabla de puntos (x_i, y_i).\n"
+            "• La gráfica del spline cúbico superpuesta a los puntos originales, mostrando la suavidad de la curva."
+        ),
+        # Ejemplo
+        "example": (
+            "Ejemplo de uso:\n"
+            "Puntos: (0,0), (1,2), (2,3), (3,2)\n\n"
+            "En la interfaz:\n"
+            "• x = '0,1,2,3'\n"
+            "• y = '0,2,3,2'\n\n"
+            "El método construirá los tramos cúbicos S_i(x) que conectan suavemente todos los puntos."
+        )
     },
+
     "Interpolación Lagrange": {
         "module": ("interpolacion_lagrange", "interpolacion_lagrange"),
-        "description": "Interpolación usando el polinomio de Lagrange.",
-        "required_inputs": ["Puntos x", "Valores y"],
-        "example": "X: 1,2,3 \n Y: 2,4,5 \n dando (1,2), (2,4), (3,5) como puntos de interpolación"
+        # Descripción corta, general
+        "description": (
+            "La interpolación de Lagrange construye un polinomio interpolante usando combinaciones lineales de "
+            "polinomios base L_i(x) que valen 1 en x_i y 0 en los demás nodos."
+        ),
+        # Para qué sirve
+        "purpose": (
+            "Se utiliza para encontrar el polinomio que pasa exactamente por un conjunto de puntos, sin necesidad "
+            "de resolver sistemas lineales. Es didáctico y útil para problemas de tamaño moderado."
+        ),
+        # Cómo funciona
+        "how_it_works": (
+            "1. Dados n+1 puntos (x_0, y_0), ..., (x_n, y_n), se definen los polinomios base de Lagrange:\n"
+            "      L_i(x) = Π_{j≠i} (x - x_j) / (x_i - x_j).\n"
+            "2. El polinomio interpolante se construye como:\n"
+            "      P(x) = Σ_{i=0}^n y_i · L_i(x).\n"
+            "3. Por construcción, P(x_k) = y_k para cada k.\n"
+            "4. Una vez definido P(x), se puede evaluar en cualquier punto para aproximar el valor de la función."
+        ),
+        # Datos requeridos
+        "required_inputs": [
+            "Puntos x (separados por comas)",
+            "Valores y (separados por comas)"
+        ],
+        # Qué verá el usuario en la GUI
+        "ui_info": (
+            "En la interfaz podrás ver:\n"
+            "• El polinomio de Lagrange o una representación equivalente.\n"
+            "• Los puntos usados en la interpolación.\n"
+            "• Una ventana opcional con el polinomio completo para copiarlo.\n"
+            "• La gráfica del polinomio interpolante junto con los puntos de datos (si la implementación lo permite)."
+        ),
+        # Ejemplo
+        "example": (
+            "Ejemplo de uso:\n"
+            "Puntos: (1,1), (2,4), (3,9)\n\n"
+            "En la interfaz:\n"
+            "• x = '1,2,3'\n"
+            "• y = '1,4,9'\n\n"
+            "El método construirá el polinomio de Lagrange que pasa por esos tres puntos, que en este caso "
+            "se aproxima a la función x^2 en esos nodos."
+        )
     }
 }
 
