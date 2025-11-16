@@ -21,16 +21,16 @@ def str_to_numpy_matrix(matrix_str):
     except Exception as e:
         raise ValueError(f"Error al convertir cadena a matriz numpy: {e}")
 
-def gauss_seidel_method(A, b, x0, tolerance, max_iterations, error_type='rela', show_report=False, error_types=None, auto_compare=True):
+def gauss_seidel_method(A, b, x0, tolerance, max_iterations, error_type='rela', show_report=False, auto_compare=True):
     # si se solicita informe comparativo delegar a supCp2
     if show_report:
         try:
             from Python.supCp2 import subgauss_seidel as sg
-            return sg.gauss_seidel_method(A, b, x0, tolerance, max_iterations, error_type, show_report=True, error_types=error_types, auto_compare=auto_compare)
+            return sg.gauss_seidel_method(A, b, x0, tolerance, max_iterations, error_type, show_report=True, auto_compare=auto_compare)
         except Exception:
             try:
                 import supCp2.subgauss_seidel as sg
-                return sg.gauss_seidel_method(A, b, x0, tolerance, max_iterations, error_type, show_report=True, error_types=error_types, auto_compare=auto_compare)
+                return sg.gauss_seidel_method(A, b, x0, tolerance, max_iterations, error_type, show_report=True, auto_compare=auto_compare)
             except Exception:
                 pass
     matrix_a = A if isinstance(A, np.ndarray) else str_to_numpy_matrix(A)

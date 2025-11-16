@@ -2,3 +2,5 @@ numpy
 pandas
 matplotlib
 tabulate
+scipy
+sympy

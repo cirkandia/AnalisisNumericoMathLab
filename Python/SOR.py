@@ -22,16 +22,16 @@ def str_to_numpy_matrix(matrix_str):
         print(f"Error al convertir cadena a matriz numpy: {e}")
         return None
 
-def sor_method(A, b, x0, w, tolerance, max_iterations, error_type='rela', show_report=False, error_types=None, auto_compare=True):
+def sor_method(A, b, x0, w, tolerance, max_iterations, error_type='rela', show_report=False, auto_compare=True):
     # si se solicita informe comparativo delegar a supCp2
     if show_report:
         try:
             from Python.supCp2 import subSOR as ss
-            return ss.sor_method(A, b, x0, w, tolerance, max_iterations, error_type, show_report=True, error_types=error_types, auto_compare=auto_compare)
+            return ss.sor_method(A, b, x0, w, tolerance, max_iterations, error_type, show_report=True, auto_compare=auto_compare)
         except Exception:
             try:
                 import supCp2.subSOR as ss
-                return ss.sor_method(A, b, x0, w, tolerance, max_iterations, error_type, show_report=True, error_types=error_types, auto_compare=auto_compare)
+                return ss.sor_method(A, b, x0, w, tolerance, max_iterations, error_type, show_report=True, auto_compare=auto_compare)
             except Exception:
                 pass
     matrix_a = A if isinstance(A, np.ndarray) else str_to_numpy_matrix(A)

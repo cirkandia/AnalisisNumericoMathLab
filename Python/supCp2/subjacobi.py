@@ -43,7 +43,7 @@ def _compute_once(A_local, b_local, x0_local, tol, max_it, err_type):
     return rows, metrics
 
 
-def jacobi(A, b, x0, tolerance, max_iterations, error_type='rela', show_report=False, error_types=None, auto_compare=True):
+def jacobi(A, b, x0, tolerance, max_iterations, error_type='rela', show_report=False, auto_compare=True):
     # A, b, x0 pueden ser numpy arrays (desde GUI2) o strings (ejecución directa)
     matrix_a = A if isinstance(A, np.ndarray) else str_to_numpy_matrix(A)
     vector_b = b if isinstance(b, np.ndarray) else str_to_numpy_matrix(b)
@@ -93,7 +93,7 @@ def jacobi(A, b, x0, tolerance, max_iterations, error_type='rela', show_report=F
     # Si se solicitó informe comparativo construir informe ejecutando los métodos disponibles
     if show_report:
         # definir tipos de error a probar
-        ets = error_types if error_types is not None else ['abs', 'rela']
+        ets = error_type if error_type is not None else ['abs', 'rela']
         informe = {}
         # incluir Jacobi
         for et in ets:

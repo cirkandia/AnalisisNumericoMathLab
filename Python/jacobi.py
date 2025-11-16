@@ -19,16 +19,16 @@ def str_to_numpy_matrix(matrix_str):
         return None
     
 
-def jacobi(A, b, x0, tolerance, max_iterations, error_type='rela', show_report=False, error_types=None, auto_compare=True):
+def jacobi(A, b, x0, tolerance, max_iterations, error_type='rela', show_report=False,  auto_compare=True):
     # si se solicita informe comparativo, delegar a la versión en supCp2 (si existe)
     if show_report:
         try:
             from Python.supCp2 import subjacobi as sj
-            return sj.jacobi(A, b, x0, tolerance, max_iterations, error_type, show_report=True, error_types=error_types, auto_compare=auto_compare)
+            return sj.jacobi(A, b, x0, tolerance, max_iterations, error_type, show_report=True, auto_compare=auto_compare)
         except Exception:
             try:
                 import supCp2.subjacobi as sj
-                return sj.jacobi(A, b, x0, tolerance, max_iterations, error_type, show_report=True, error_types=error_types, auto_compare=auto_compare)
+                return sj.jacobi(A, b, x0, tolerance, max_iterations, error_type, show_report=True, auto_compare=auto_compare)
             except Exception:
                 pass
     # A, b, x0 pueden ser numpy arrays (desde GUI2) o strings (ejecución directa)

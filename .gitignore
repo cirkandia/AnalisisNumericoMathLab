@@ -4,3 +4,5 @@ __pycache__/
 .pyc
 *.py[cod]
 .vscode/
+venv/
+.DS_Store
