@@ -1261,6 +1261,16 @@ class App(tk.Tk):
                 except Exception:
                     pass
 
+                # Validar inputs antes de ejecutar
+                try:
+                    ok, msg = self.validate_method_inputs(method_name, f_sig, args, kwargs)
+                    if not ok:
+                        messagebox.showerror("Error de validación", msg)
+                        return
+                except Exception:
+                    # en caso de error inesperado en validación, continuar y dejar que la función maneje fallos
+                    pass
+
                 result = func(*args, **kwargs)
                 self.last_called_show_report = bool(kwargs.get('show_report', False))
 
@@ -1291,12 +1301,156 @@ class App(tk.Tk):
             except Exception as e:
                 messagebox.showerror("Error", f"Error en la ejecución: {str(e)}")
 
+        # Helpers para validación en tiempo real
+        def build_args_kwargs_preview():
+            """Construye args, kwargs a partir de los valores actuales en los widgets.
+               Retorna (args, kwargs, True, '') si OK, o (None, None, False, msg) si hay error de parseo."""
+            try:
+                args_p = []
+                if use_f:
+                    f_str_val = f_entry.get().strip()
+                    if not f_str_val:
+                        return None, None, False, "Función f(x) vacía"
+                    # usar un placeholder seguro para validación
+                    f_placeholder = lambda x: 0
+                    args_p.append(f_placeholder)
+
+                x_vals_p = None
+                y_vals_p = None
+
+                for param in params:
+                    val = entries[param].get().strip()
+                    if not val:
+                        return None, None, False, f"Falta valor para {SPANISH_PARAMS.get(param, param)}"
+
+                    if param == "lower_bound" or param == "upper_bound":
+                        # no necesitamos almacenar aquí
+                        pass
+
+                    if param == "tolerance":
+                        try:
+                            args_p.append(float(val))
+                        except Exception:
+                            return None, None, False, "Tolerancia inválida"
+
+                    elif param in ["max_iterations", "n_iter", "iteraciones"]:
+                        try:
+                            args_p.append(int(val))
+                        except Exception:
+                            return None, None, False, "Número máximo de iteraciones inválido"
+
+                    elif param.lower() in ["x_points", "puntos x", "valoresx"]:
+                        try:
+                            x_vals_p = [float(x.strip()) for x in val.split(',') if x.strip() != ""]
+                        except Exception:
+                            return None, None, False, "Valores X inválidos"
+
+                    elif param.lower() in ["y_points", "valores y", "valoresy"]:
+                        try:
+                            y_vals_p = [float(y.strip()) for y in val.split(',') if y.strip() != ""]
+                        except Exception:
+                            return None, None, False, "Valores Y inválidos"
+
+                    elif param == "A":
+                        try:
+                            rows = val.split(';')
+                            matrix = []
+                            for row_ in rows:
+                                matrix.append([float(x.strip()) for x in row_.split(',')])
+                            args_p.append(np.array(matrix))
+                        except Exception:
+                            return None, None, False, "Matriz A inválida"
+
+                    elif param == "b":
+                        try:
+                            vector = [float(x.strip()) for x in val.split(',')]
+                            args_p.append(np.array(vector))
+                        except Exception:
+                            return None, None, False, "Vector b inválido"
+
+                    else:
+                        # intentar parseo numérico, si no dejar string
+                        try:
+                            args_p.append(float(val))
+                        except Exception:
+                            args_p.append(val)
+
+                if x_vals_p is not None and y_vals_p is not None:
+                    args_p = [x_vals_p, y_vals_p] + args_p
+
+                kwargs_p = {}
+                try:
+                    f_sig = inspect.signature(func)
+                    if 'show_report' in f_sig.parameters:
+                        try:
+                            kwargs_p['show_report'] = bool(self.show_report_var.get())
+                        except Exception:
+                            kwargs_p['show_report'] = False
+                        if 'eval_grid' in f_sig.parameters:
+                            try:
+                                kwargs_p['eval_grid'] = int(eval_grid_var.get())
+                            except Exception:
+                                kwargs_p['eval_grid'] = 500
+                        if 'auto_compare' in f_sig.parameters:
+                            kwargs_p['auto_compare'] = bool(self.auto_cmp_var.get())
+                    if 'error_type' in f_sig.parameters:
+                        kwargs_p['error_type'] = error_type_var.get()
+                except Exception:
+                    pass
+
+                return args_p, kwargs_p, True, ''
+            except Exception as e:
+                return None, None, False, str(e)
+
+        def validate_form(*_):
+            args_p, kwargs_p, ok, msg = build_args_kwargs_preview()
+            if not ok:
+                btn_execute.config(state='disabled')
+                return
+            try:
+                f_sig = inspect.signature(func)
+            except Exception:
+                btn_execute.config(state='normal')
+                return
+            try:
+                ok2, msg2 = self.validate_method_inputs(method_name, f_sig, args_p, kwargs_p)
+                if ok2:
+                    btn_execute.config(state='normal')
+                else:
+                    btn_execute.config(state='disabled')
+            except Exception:
+                btn_execute.config(state='normal')
+
         button_frame = tk.Frame(main_frame, bg='#f0f0f0')
         button_frame.pack(pady=20)
 
-        tk.Button(button_frame, text="Ejecutar Método", font=("Arial", 12, "bold"),
+        btn_execute = tk.Button(button_frame, text="Ejecutar Método", font=("Arial", 12, "bold"),
                   bg='#27ae60', fg='white', padx=20, pady=8, cursor='hand2',
-                  command=execute).pack(side='left', padx=10)
+                  command=execute, state='disabled')
+        btn_execute.pack(side='left', padx=10)
+
+        # Enlazar validación en tiempo real a los entries
+        for w in entries.values():
+            try:
+                w.bind('<KeyRelease>', validate_form)
+            except Exception:
+                pass
+        if use_f:
+            try:
+                f_entry.bind('<KeyRelease>', validate_form)
+            except Exception:
+                pass
+
+        # También validar cuando cambian los checkbuttons o eval_grid
+        try:
+            self.show_report_var.trace_add('write', lambda *a: validate_form())
+            self.auto_cmp_var.trace_add('write', lambda *a: validate_form())
+            eval_grid_var.trace_add('write', lambda *a: validate_form())
+        except Exception:
+            pass
+
+        # Validación inicial
+        validate_form()
 
         tk.Button(button_frame, text="Volver", font=("Arial", 12),
                   bg='#95a5a6', fg='white', padx=20, pady=8, cursor='hand2',
@@ -1531,6 +1685,147 @@ class App(tk.Tk):
         btn_frame.pack(fill='x', padx=10, pady=(0, 10))
         tk.Button(btn_frame, text="Copiar todo", command=copy_all,
                   bg='#3498db', fg='white').pack(side='right')
+
+    def validate_method_inputs(self, method_name, f_sig, args, kwargs):
+        """
+        Validación básica y preventiva de inputs antes de ejecutar un método.
+        Comprueba forma de `A`, tamaño de `b` y `x0`, diagonal no nula para iterativos,
+        rango de `omega` para SOR, y que `tolerance` y `max_iterations` sean positivos.
+        Devuelve (True, '') si OK; (False, mensaje) si hay error.
+        """
+        try:
+            import numpy as _np
+        except Exception:
+            return True, ''
+
+        SKIP_PARAMS = {'show_report', 'eval_grid', 'auto_compare', 'error_type'}
+        params = [p for p in list(f_sig.parameters.keys()) if p not in SKIP_PARAMS]
+
+        # Mapear parámetros posicionales
+        param_to_value = {}
+        for i, p in enumerate(params):
+            if i < len(args):
+                param_to_value[p] = args[i]
+            elif p in kwargs:
+                param_to_value[p] = kwargs[p]
+            else:
+                param_to_value[p] = None
+
+        # Detectar A, b, x0 si están presentes
+        A = None
+        b = None
+        x0 = None
+        # nombres comunes
+        if 'A' in param_to_value:
+            A = param_to_value['A']
+        else:
+            # buscar primer ndarray 2D en values
+            for v in param_to_value.values():
+                try:
+                    arr = _np.array(v)
+                    if arr.ndim == 2:
+                        A = arr
+                        break
+                except Exception:
+                    continue
+
+        if 'b' in param_to_value:
+            b = param_to_value['b']
+        else:
+            for v in param_to_value.values():
+                try:
+                    arr = _np.array(v)
+                    if arr.ndim == 1:
+                        # candidate for b/x0; but keep first 1D as b unless x0 explicit
+                        if b is None:
+                            b = arr
+                except Exception:
+                    continue
+
+        for name in ('x0', 'x_inicial', 'x_ini', 'x_inicial2', 'x1'):
+            if name in param_to_value and param_to_value[name] is not None:
+                x0 = param_to_value[name]
+                break
+
+        # Normalizar arrays si existen
+        if A is not None:
+            try:
+                A = _np.array(A, dtype=float)
+            except Exception:
+                return False, "La matriz A contiene elementos no válidos."
+            if A.ndim != 2 or A.shape[0] != A.shape[1]:
+                return False, "La matriz A debe ser cuadrada."
+            n = A.shape[0]
+        else:
+            n = None
+
+        if b is not None and n is not None:
+            try:
+                b_arr = _np.array(b, dtype=float)
+            except Exception:
+                return False, "El vector b contiene elementos no válidos."
+            if b_arr.ndim != 1 or b_arr.shape[0] != n:
+                return False, "El vector b debe tener tamaño igual al número de filas de A."
+
+        if x0 is not None and n is not None:
+            try:
+                x0_arr = _np.array(x0, dtype=float)
+            except Exception:
+                return False, "La estimación inicial x0 contiene elementos no válidos."
+            if x0_arr.ndim != 1 or x0_arr.shape[0] != n:
+                return False, "La estimación inicial x0 debe tener tamaño igual al número de incógnitas."
+
+        # Chequeos específicos para métodos iterativos
+        mname = method_name.lower() if method_name else ''
+        if mname in ('jacobi', 'gauss_seidel', 'gauss-seidel', 'sor', 'subjacobi', 'subgauss_seidel', 'subsor'):
+            if A is None:
+                return False, "Método iterativo requiere matriz A válida."
+            diag = _np.diag(A)
+            if _np.any(_np.isclose(diag, 0.0)):
+                return False, "A tiene ceros en la diagonal; los métodos iterativos requieren diagonal no nula."
+
+        # Omega (w) para SOR
+        if mname == 'sor' or 'w' in kwargs or 'omega' in kwargs:
+            w = kwargs.get('w', kwargs.get('omega', None))
+            if w is not None:
+                try:
+                    wv = float(w)
+                    if not (0.0 < wv < 2.0):
+                        return False, "El factor omega (w) para SOR debe estar en (0, 2)."
+                except Exception:
+                    return False, "Omega inválido para SOR."
+
+        # max_iterations y tolerance
+        max_it = kwargs.get('max_iterations') or kwargs.get('n_iter') or kwargs.get('iteraciones')
+        if max_it is not None:
+            try:
+                if int(max_it) <= 0:
+                    return False, "El número máximo de iteraciones debe ser mayor que 0."
+            except Exception:
+                return False, "Número máximo de iteraciones inválido."
+
+        tol = kwargs.get('tolerance') or kwargs.get('tol')
+        if tol is not None:
+            try:
+                if float(tol) <= 0:
+                    return False, "La tolerancia debe ser mayor que 0."
+            except Exception:
+                return False, "Tolerancia inválida."
+
+        # normalizar error_type en kwargs si es posible
+        if 'error_type' in kwargs:
+            et = str(kwargs.get('error_type')).lower()
+            if et in ('rela', 'rel'):
+                kwargs['error_type'] = 'rel'
+            elif et in ('abs',):
+                kwargs['error_type'] = 'abs'
+            elif et in ('cond',):
+                kwargs['error_type'] = 'cond'
+            else:
+                # no fatal, solo normalizamos a 'rel'
+                kwargs['error_type'] = 'rel'
+
+        return True, ''
     
     def build_run_summary(self, method_name, result, error_type):
         """
