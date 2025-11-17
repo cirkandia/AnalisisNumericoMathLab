@@ -1119,6 +1119,8 @@ class App(tk.Tk):
         self.last_called_show_report = False
         auto_cmp_var = tk.BooleanVar(value=True)
         eval_grid_var = tk.StringVar(value='500')
+        # Checkbox para que el usuario decida si quiere ejecutar el informe comparativo
+        show_report_var = tk.BooleanVar(value=False)
 
         # NUEVO: tipo de error seleccionado por el usuario
         error_type_var = tk.StringVar(value='rel')  # 'rel', 'abs' o 'cond'
@@ -1132,6 +1134,13 @@ class App(tk.Tk):
             variable=auto_cmp_var,
             bg='#f0f0f0'
         ).pack(side='left', padx=(0, 10))
+
+        tk.Checkbutton(
+            opts_frame,
+            text='Mostrar informe',
+            variable=show_report_var,
+            bg='#f0f0f0'
+        ).pack(side='left', padx=(10, 10))
 
         tk.Label(opts_frame, text='Eval grid:', bg='#f0f0f0').pack(side='left')
         tk.Entry(opts_frame, textvariable=eval_grid_var, width=6).pack(side='left', padx=(5, 0))
@@ -1234,7 +1243,10 @@ class App(tk.Tk):
                 try:
                     f_sig = inspect.signature(func)
                     if 'show_report' in f_sig.parameters:
-                        kwargs['show_report'] = True
+                        try:
+                            kwargs['show_report'] = bool(show_report_var.get())
+                        except Exception:
+                            kwargs['show_report'] = False
                         if 'eval_grid' in f_sig.parameters:
                             try:
                                 kwargs['eval_grid'] = int(eval_grid_var.get())

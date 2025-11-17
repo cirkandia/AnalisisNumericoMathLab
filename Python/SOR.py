@@ -22,7 +22,7 @@ def str_to_numpy_matrix(matrix_str):
         print(f"Error al convertir cadena a matriz numpy: {e}")
         return None
 
-def sor_method(A, b, x0, w, tolerance, max_iterations, error_type='rel', show_report=False, auto_compare=True):
+def sor_method(A, b, x0, w, tolerance, max_iterations, error_type='rel', show_report=True, auto_compare=True):
     # si se solicita informe comparativo delegar a supCp2
     if show_report:
         try:
@@ -88,7 +88,14 @@ if __name__ == '__main__':
 
     res = sor_method(matrix_a_str, vector_b_str, initial_guess_str, relaxation_factor, tolerance, max_iterations, error_type)
     # Imprimir resumen y tabla
-    summary, table = res
+    # Normalizar retorno: puede ser (summary, table) o (summary, report, table)
+    if isinstance(res, (list, tuple)):
+        summary = res[0] if len(res) > 0 else ''
+        table = res[-1] if len(res) > 1 else []
+    else:
+        summary = res
+        table = []
+
     print(summary)
     try:
         from tabulate import tabulate

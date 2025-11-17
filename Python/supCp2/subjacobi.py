@@ -186,6 +186,7 @@ def jacobi(A, b, x0, tolerance, max_iterations, error_type='rel', show_report=Fa
             pass
 
         report = {'metrics': informe, 'best': resumen_best}
-        return (summary_text, report)
+        # Siempre devolver también la tabla de iteraciones como último elemento
+        return (summary_text, report, results_matrix)
 
     return (summary_text, results_matrix)

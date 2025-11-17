@@ -182,7 +182,8 @@ def sor_method(A, b, x0, w, tolerance, max_iterations, error_type='rel', show_re
             pass
 
         report = {'metrics': informe, 'best': resumen_best}
-        return (summary_text, report)
+        # Siempre devolver también la tabla de iteraciones como último elemento
+        return (summary_text, report, results_matrix)
 
     return (summary_text, results_matrix)
 
@@ -199,7 +200,14 @@ if __name__ == '__main__':
 
     res = sor_method(matrix_a_str, vector_b_str, initial_guess_str, relaxation_factor, tolerance, max_iterations, error_type)
     # Imprimir resumen y tabla
-    summary, table = res
+    # Normalizar retorno: puede ser (summary, table) o (summary, report, table)
+    if isinstance(res, (list, tuple)):
+        summary = res[0] if len(res) > 0 else ''
+        table = res[-1] if len(res) > 1 else []
+    else:
+        summary = res
+        table = []
+
     print(summary)
     try:
         from tabulate import tabulate
