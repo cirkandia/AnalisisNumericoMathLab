@@ -35,7 +35,7 @@ def _compute_once(A_local, b_local, x0_local, tol, max_it, err_type):
         abs_err = np.linalg.norm(x - x_prev)
         rel_err = abs_err / np.linalg.norm(x) if np.linalg.norm(x) != 0 else float('inf')
         rows.append([k, x.copy().tolist(), float(abs_err), float(rel_err)])
-        err = rel_err if err_type == 'rela' else abs_err
+        err = rel_err if err_type == 'rel' else abs_err
         if err < tol:
             break
     end = time.perf_counter()
@@ -43,7 +43,7 @@ def _compute_once(A_local, b_local, x0_local, tol, max_it, err_type):
     return rows, metrics
 
 
-def jacobi(A, b, x0, tolerance, max_iterations, error_type='rela', show_report=False, auto_compare=True):
+def jacobi(A, b, x0, tolerance, max_iterations, error_type='rel', show_report=False, auto_compare=True):
     # A, b, x0 pueden ser numpy arrays (desde GUI2) o strings (ejecución directa)
     matrix_a = A if isinstance(A, np.ndarray) else str_to_numpy_matrix(A)
     vector_b = b if isinstance(b, np.ndarray) else str_to_numpy_matrix(b)
@@ -93,7 +93,7 @@ def jacobi(A, b, x0, tolerance, max_iterations, error_type='rela', show_report=F
     # Si se solicitó informe comparativo construir informe ejecutando los métodos disponibles
     if show_report:
         # definir tipos de error a probar
-        ets = error_type if error_type is not None else ['abs', 'rela']
+        ets = [error_type] if error_type is not None else ['abs', 'rel']
         informe = {}
         # incluir Jacobi
         for et in ets:
@@ -148,11 +148,11 @@ def jacobi(A, b, x0, tolerance, max_iterations, error_type='rela', show_report=F
                         continue
                     rows = data['rows']
                     its = [r[0] for r in rows]
-                    vals = [r[3] for r in rows] if et == 'rela' else [r[2] for r in rows]
+                    vals = [r[3] for r in rows] if et == 'rel' else [r[2] for r in rows]
                     ax.semilogy(its, vals, marker='o', label=method)
                 ax.set_title(f'Convergencia por iteración ({et})')
                 ax.set_xlabel('Iteración')
-                ax.set_ylabel('Error relativo' if et == 'rela' else 'Error absoluto')
+                ax.set_ylabel('Error relativo' if et == 'rel' else 'Error absoluto')
                 ax.grid(True, which='both', ls='--')
                 ax.legend()
 

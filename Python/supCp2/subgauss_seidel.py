@@ -38,14 +38,14 @@ def _compute_once(A_local, b_local, x0_local, tol, max_it, err_type):
         abs_err = np.linalg.norm(x - x_prev)
         rel_err = abs_err / np.linalg.norm(x) if np.linalg.norm(x) != 0 else float('inf')
         rows.append([k, x.copy().tolist(), float(abs_err), float(rel_err)])
-        err = rel_err if err_type == 'rela' else abs_err
+        err = rel_err if err_type == 'rel' else abs_err
         if err < tol:
             break
     end = time.perf_counter()
     metrics = {'iterations': len(rows), 'abs_error': float(rows[-1][2]) if rows else None, 'rel_error': float(rows[-1][3]) if rows else None, 'time': end - start}
     return rows, metrics
 
-def gauss_seidel_method(A, b, x0, tolerance, max_iterations, error_type='rela', show_report=False, auto_compare=True):
+def gauss_seidel_method(A, b, x0, tolerance, max_iterations, error_type='rel', show_report=False, auto_compare=True):
     matrix_a = A if isinstance(A, np.ndarray) else str_to_numpy_matrix(A)
     vector_b = b if isinstance(b, np.ndarray) else str_to_numpy_matrix(b)
     initial_guess = x0 if isinstance(x0, np.ndarray) else str_to_numpy_matrix(x0)
@@ -90,7 +90,7 @@ def gauss_seidel_method(A, b, x0, tolerance, max_iterations, error_type='rela', 
     summary_text = "\n".join(summary)
 
     if show_report:
-        ets = error_type if error_type is not None else ['abs', 'rela']
+        ets = [error_type] if error_type is not None else ['abs', 'rel']
         informe = {}
         for et in ets:
                 r, m = _compute_once(matrix_a, vector_b, initial_guess, tolerance, max_iterations, et)
@@ -143,11 +143,11 @@ def gauss_seidel_method(A, b, x0, tolerance, max_iterations, error_type='rela', 
                         continue
                     rows = data['rows']
                     its = [r[0] for r in rows]
-                    vals = [r[3] for r in rows] if et == 'rela' else [r[2] for r in rows]
+                    vals = [r[3] for r in rows] if et == 'rel' else [r[2] for r in rows]
                     ax.semilogy(its, vals, marker='o', label=method)
                 ax.set_title(f'Convergencia por iteración ({et})')
                 ax.set_xlabel('Iteración')
-                ax.set_ylabel('Error relativo' if et == 'rela' else 'Error absoluto')
+                ax.set_ylabel('Error relativo' if et == 'rel' else 'Error absoluto')
                 ax.grid(True, which='both', ls='--')
                 ax.legend()
 

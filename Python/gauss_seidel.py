@@ -21,7 +21,7 @@ def str_to_numpy_matrix(matrix_str):
     except Exception as e:
         raise ValueError(f"Error al convertir cadena a matriz numpy: {e}")
 
-def gauss_seidel_method(A, b, x0, tolerance, max_iterations, error_type='rela', show_report=False, auto_compare=True):
+def gauss_seidel_method(A, b, x0, tolerance, max_iterations, error_type='rel', show_report=False, auto_compare=True):
     # si se solicita informe comparativo delegar a supCp2
     if show_report:
         try:

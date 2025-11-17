@@ -19,7 +19,7 @@ def str_to_numpy_matrix(matrix_str):
         return None
     
 
-def jacobi(A, b, x0, tolerance, max_iterations, error_type='rela', show_report=False,  auto_compare=True):
+def jacobi(A, b, x0, tolerance, max_iterations, error_type='rel', show_report=False,  auto_compare=True):
     # si se solicita informe comparativo, delegar a la versión en supCp2 (si existe)
     if show_report:
         try:
