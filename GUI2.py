@@ -1117,10 +1117,10 @@ class App(tk.Tk):
         input_frame.grid_columnconfigure(1, weight=1)
 
         self.last_called_show_report = False
-        auto_cmp_var = tk.BooleanVar(value=True)
+        self.auto_cmp_var = tk.BooleanVar(value=True)
         eval_grid_var = tk.StringVar(value='500')
         # Checkbox para que el usuario decida si quiere ejecutar el informe comparativo
-        show_report_var = tk.BooleanVar(value=False)
+        self.show_report_var = tk.BooleanVar(value=False)
 
         # NUEVO: tipo de error seleccionado por el usuario
         error_type_var = tk.StringVar(value='rel')  # 'rel', 'abs' o 'cond'
@@ -1131,14 +1131,14 @@ class App(tk.Tk):
         tk.Checkbutton(
             opts_frame,
             text='Comparación automática',
-            variable=auto_cmp_var,
+            variable=self.auto_cmp_var,
             bg='#f0f0f0'
         ).pack(side='left', padx=(0, 10))
 
         tk.Checkbutton(
             opts_frame,
             text='Mostrar informe',
-            variable=show_report_var,
+            variable=self.show_report_var,
             bg='#f0f0f0'
         ).pack(side='left', padx=(10, 10))
 
@@ -1244,7 +1244,7 @@ class App(tk.Tk):
                     f_sig = inspect.signature(func)
                     if 'show_report' in f_sig.parameters:
                         try:
-                            kwargs['show_report'] = bool(show_report_var.get())
+                            kwargs['show_report'] = bool(self.show_report_var.get())
                         except Exception:
                             kwargs['show_report'] = False
                         if 'eval_grid' in f_sig.parameters:
@@ -1253,7 +1253,7 @@ class App(tk.Tk):
                             except Exception:
                                 kwargs['eval_grid'] = 500
                         if 'auto_compare' in f_sig.parameters:
-                            kwargs['auto_compare'] = bool(auto_cmp_var.get())
+                            kwargs['auto_compare'] = bool(self.auto_cmp_var.get())
 
                     # NUEVO: pasar tipo de error si el método lo permite
                     if 'error_type' in f_sig.parameters:
@@ -1271,7 +1271,7 @@ class App(tk.Tk):
                         self.run_history.append(summary)
 
                     # ⚠ AUTO-EJECUTAR los otros métodos de raíces para comparación
-                    if auto_cmp_var.get() and use_f and self.last_a is not None and self.last_b is not None:
+                    if self.auto_cmp_var.get() and use_f and self.last_a is not None and self.last_b is not None:
                         self.auto_run_other_root_methods(
                             current_method=method_name,
                             f_str=self.last_function_str,
@@ -1285,7 +1285,7 @@ class App(tk.Tk):
                 self.show_result(method_name, result)
 
                 # NUEVO: si el usuario quiere comparación automática e hizo un método de raíces, mostrar informe
-                if auto_cmp_var.get() and method_name in ROOT_METHODS:
+                if self.auto_cmp_var.get() and method_name in ROOT_METHODS:
                     self.show_comparison_report(error_type_var.get())
 
             except Exception as e:
@@ -1328,7 +1328,8 @@ class App(tk.Tk):
 
         if method_name in ["Vandermonde", "spline_lineal", "spline_cubico",
                            "interpolacion_lagrange", "interpolacion_newton"] \
-                and not getattr(self, 'last_called_show_report', False):
+                and not getattr(self, 'last_called_show_report', False) \
+                and (self.show_report_var.get() or self.auto_cmp_var.get()):
             if messagebox.askyesno("Comparar", "¿Desea comparar con otros métodos de interpolación?"):
                 comparar_metodos(self.ultimo_x, self.ultimo_y)
 
