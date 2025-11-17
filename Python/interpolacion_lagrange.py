@@ -7,7 +7,9 @@ from Python.supCp3 import SUBspln_cubico
 from Python.supCp3 import SUBspline_lineal
 from Python.supCp3 import Subvandermonde
 
-def interpolacion_lagrange(ValoresX=None, ValoresY=None, show_report=True, eval_grid=500, auto_compare=True):
+def interpolacion_lagrange(ValoresX=None, ValoresY=None, show_report=True, auto_compare=True):
+    eval_grid=500
+    
     # Entrada de datos si no se pasan argumentos
     if ValoresX is None or ValoresY is None:
         x = input("Ingrese los valores de x separados por coma: ")
@@ -211,7 +213,6 @@ def interpolacion_lagrange(ValoresX=None, ValoresY=None, show_report=True, eval_
                 except Exception:
                     pass
         except Exception:
-            # No fallar la función principal si la comparación falla
             pass
 
     return resultado, info

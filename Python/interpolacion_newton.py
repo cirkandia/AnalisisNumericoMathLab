@@ -7,7 +7,8 @@ from Python.supCp3 import SUBspln_cubico
 from Python.supCp3 import SUBspline_lineal
 from Python.supCp3 import Subvandermonde
 
-def interpolacion_newton(ValoresX=None, ValoresY=None, show_report=True, eval_grid=500, auto_compare=True):
+def interpolacion_newton(ValoresX=None, ValoresY=None, show_report=True, auto_compare=True):
+    eval_grid=500
     # Entrada de datos si no se pasan argumentos
     if ValoresX is None or ValoresY is None:
         x = input("Ingrese los valores de x separados por coma: ")
@@ -219,7 +220,5 @@ def interpolacion_newton(ValoresX=None, ValoresY=None, show_report=True, eval_gr
         plt.show(block=False)
         resultado += "\nComparación general mostrada en la gráfica."
 
-
-# Ejecutar solo si es script principal
 if __name__ == "__main__":
     print(interpolacion_newton())

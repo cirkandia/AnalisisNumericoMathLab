@@ -7,7 +7,8 @@ from Python.supCp3 import SUBinterpol_newton
 from Python.supCp3 import SUBspln_cubico
 from Python.supCp3 import Subvandermonde
 
-def spline_lineal_con_polinomios(ValoresX=None, ValoresY=None, show_report=True, eval_grid=500, auto_compare=True):
+def spline_lineal_con_polinomios(ValoresX=None, ValoresY=None, show_report=True,  auto_compare=True):
+    eval_grid=500
     # Entrada de datos si no se pasan argumentos
     if ValoresX is None or ValoresY is None:
         x = input("Ingrese los valores de x separados por coma: ")

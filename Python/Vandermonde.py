@@ -8,7 +8,7 @@ from Python.supCp3 import SUBspline_lineal
 #from Python.supCp3 import Subvandermonde
 
 
-def interpolacion_vandermonde(ValoresX=None, ValoresY=None, show_report=True, eval_grid=500, auto_compare=True):
+def interpolacion_vandermonde(ValoresX=None, ValoresY=None, show_report=True,  auto_compare=True):
     # Validación de entrada
     x = np.array(ValoresX)
     y = np.array(ValoresY)
@@ -95,11 +95,10 @@ def interpolacion_vandermonde(ValoresX=None, ValoresY=None, show_report=True, ev
 
     return resultado, info
 
-def comparar_metodos(ValoresX, ValoresY, show_report=True, eval_grid=500):
+def comparar_metodos(ValoresX, ValoresY, show_report=True):
     x = np.array(ValoresX)
     y = np.array(ValoresY)
-    # usar una malla de evaluación dependiente de eval_grid
-    x_plot = np.linspace(min(x), max(x), max(100, int(eval_grid)))
+    x_plot = np.linspace(min(x), max(x), max(100, int(500)))
 
     # Vandermonde
     t0 = time.perf_counter()
