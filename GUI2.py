@@ -90,13 +90,13 @@ METHODS = {
             "   • Si f(a)·f(xr) < 0, la raíz está en [a, xr], entonces b = xr.\n"
             "   • Si f(xr)·f(b) < 0, la raíz está en [xr, b], entonces a = xr.\n"
             "4. Se repite el proceso actualizando siempre el extremo que conserva el cambio de signo.\n"
-            "5. El método se detiene cuando el error es menor que la tolerancia establecida o se alcanza "
+            "5. Se detiene cuando el error es menor que la tolerancia establecida o se alcanza "
             "el máximo número de iteraciones."
         ),
         # Datos requeridos
         "required_inputs": [
             "Función f(x) continua en el intervalo [a, b] (por ejemplo: x**2 - 2)",
-            "Límite inferior (a), donde f(a) y f(b) tengan signos opuestos",
+            "Límite inferior (a), donde f(a) y f(b) tienen signos opuestos",
             "Límite superior (b)",
             "Tolerancia (Tol), por ejemplo 1e-3 o 0.001",
             "Máximo iteraciones (it), por ejemplo 50 o 100"
@@ -1122,6 +1122,9 @@ class App(tk.Tk):
         # Checkbox para que el usuario decida si quiere ejecutar el informe comparativo
         self.show_report_var = tk.BooleanVar(value=False)
 
+        # 🔹 NUEVO: checkbox para comparar tipos de error en el Capítulo 1
+        self.compare_error_types_var = tk.BooleanVar(value=False)
+
         # NUEVO: tipo de error seleccionado por el usuario
         error_type_var = tk.StringVar(value='rel')  # 'rel', 'abs' o 'cond'
 
@@ -1139,6 +1142,14 @@ class App(tk.Tk):
             opts_frame,
             text='Mostrar informe',
             variable=self.show_report_var,
+            bg='#f0f0f0'
+        ).pack(side='left', padx=(10, 10))
+
+        # checkbox “Comparar tipos de error (Cap. 1)”
+        tk.Checkbutton(
+            opts_frame,
+            text='Comparar los tipos de error',
+            variable=self.compare_error_types_var,
             bg='#f0f0f0'
         ).pack(side='left', padx=(10, 10))
 
@@ -1261,6 +1272,7 @@ class App(tk.Tk):
                 except Exception:
                     pass
 
+                # === EJECUCIÓN PRINCIPAL ===
                 result = func(*args, **kwargs)
                 self.last_called_show_report = bool(kwargs.get('show_report', False))
 
@@ -1282,11 +1294,35 @@ class App(tk.Tk):
                             error_type=error_type_var.get(),
                             eval_grid=eval_grid_var.get()
                         )
+
                 self.show_result(method_name, result)
 
                 # NUEVO: si el usuario quiere comparación automática e hizo un método de raíces, mostrar informe
                 if self.auto_cmp_var.get() and method_name in ROOT_METHODS:
                     self.show_comparison_report(error_type_var.get())
+
+                # 🔹 NUEVO: Comparar TIPOS de error (abs/rel/cond) para ESTE método de raíces
+                if method_name in ROOT_METHODS and self.compare_error_types_var.get():
+                    error_runs = []
+                    tipos = ['abs', 'rel', 'cond']
+
+                    for et in tipos:
+                        local_kwargs = kwargs.copy()
+                        # Forzamos configuración silenciosa sin informes ni auto comparación
+                        local_kwargs['show_report'] = False
+                        local_kwargs['auto_compare'] = False
+                        local_kwargs['error_type'] = et
+
+                        try:
+                            res_et = func(*args, **local_kwargs)
+                            summary_et = self.build_run_summary(method_name, res_et, et)
+                            if summary_et:
+                                error_runs.append(summary_et)
+                        except Exception:
+                            continue
+
+                    if error_runs:
+                        self.show_error_type_report(method_name, error_runs)
 
             except Exception as e:
                 messagebox.showerror("Error", f"Error en la ejecución: {str(e)}")
@@ -1798,6 +1834,91 @@ class App(tk.Tk):
         msg = (
             f"Mejor método (según error '{error_type}'):\n"
             f"- {best['method']} con error final ≈ {best['final_error']:.3e} "
+            f"en {best['iterations']} iteraciones."
+        )
+
+        tk.Label(
+            info_frame,
+            text=msg,
+            font=("Arial", 10, "bold"),
+            bg='#f0f0f0',
+            fg='#2c3e50',
+            justify='left'
+        ).pack(anchor='w')
+
+        tk.Button(
+            win,
+            text="Cerrar",
+            font=("Arial", 10, "bold"),
+            bg='#95a5a6',
+            fg='white',
+            padx=15,
+            pady=5,
+            cursor='hand2',
+            command=win.destroy
+        ).pack(pady=(0, 10))
+
+    # 🔹 NUEVO: informe comparando TIPOS de error para UN método
+    def show_error_type_report(self, method_name, error_runs):
+        """
+        Muestra un informe comparando los tipos de error (abs, rel, cond)
+        para UN solo método de raíces.
+        """
+        # Elegir el mejor: menor error final, luego menos iteraciones
+        best = min(error_runs, key=lambda r: (r["final_error"], r["iterations"]))
+
+        win = tk.Toplevel(self)
+        win.title(f"Comparación de tipos de error - {method_name}")
+        win.geometry("700x400")
+        win.configure(bg='#f0f0f0')
+
+        title = tk.Label(
+            win,
+            text=f"COMPARACIÓN DE TIPOS DE ERROR - {method_name.upper()}",
+            font=("Arial", 14, "bold"),
+            bg='#f0f0f0',
+            fg='#2c3e50'
+        )
+        title.pack(pady=(10, 10))
+
+        frame = tk.Frame(win, bg='#f0f0f0')
+        frame.pack(fill='both', expand=True, padx=10, pady=10)
+
+        columns = ("Tipo de error", "Raíz aprox.", "Iteraciones", "Error final")
+
+        tree = ttk.Treeview(frame, columns=columns, show='headings', height=10)
+        for col in columns:
+            tree.heading(col, text=col)
+            tree.column(col, width=150, anchor='center')
+
+        for r in error_runs:
+            vals = (
+                r["error_type"],
+                f"{r['root']:.6g}",
+                r["iterations"],
+                f"{r['final_error']:.3e}"
+            )
+            item_id = tree.insert('', 'end', values=vals)
+            if r is best:
+                tree.item(item_id, tags=('best',))
+
+        tree.tag_configure('best', background='#d6eaf8')
+
+        vscroll = ttk.Scrollbar(frame, orient='vertical', command=tree.yview)
+        tree.configure(yscrollcommand=vscroll.set)
+
+        tree.grid(row=0, column=0, sticky='nsew')
+        vscroll.grid(row=0, column=1, sticky='ns')
+
+        frame.grid_rowconfigure(0, weight=1)
+        frame.grid_columnconfigure(0, weight=1)
+
+        info_frame = tk.Frame(win, bg='#f0f0f0')
+        info_frame.pack(fill='x', padx=10, pady=(0, 10))
+
+        msg = (
+            f"Mejor tipo de error para {method_name}:\n"
+            f"- '{best['error_type']}' con error final ≈ {best['final_error']:.3e} "
             f"en {best['iterations']} iteraciones."
         )
 
